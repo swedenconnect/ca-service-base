@@ -24,6 +24,7 @@ import com.cloudbees.syslog.sender.SyslogMessageSender;
 import com.cloudbees.syslog.sender.TcpSyslogMessageSender;
 import com.cloudbees.syslog.sender.UdpSyslogMessageSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.audit.AuditEvent;
@@ -55,6 +56,7 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
 
   public ExtSyslogMessageSender(SyslogConfigProperties.SyslogConfigData scd) {
     this.syslogConfigData = scd;
+    this.objectMapper.registerModule(new JavaTimeModule());
 
     clientHostName = System.getenv(HOSTNAME_ENV_LABEL);
     if (StringUtils.hasText(scd.getClienthostname())) {
