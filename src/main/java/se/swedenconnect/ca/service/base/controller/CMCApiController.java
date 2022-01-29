@@ -18,6 +18,11 @@ package se.swedenconnect.ca.service.base.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.cmc.*;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.crmf.CertificateRequestMessage;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -27,12 +32,31 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import se.swedenconnect.ca.cmc.api.CMCCaApi;
+import se.swedenconnect.ca.cmc.api.CMCRequestParser;
+import se.swedenconnect.ca.cmc.api.data.CMCControlObject;
+import se.swedenconnect.ca.cmc.api.data.CMCRequest;
 import se.swedenconnect.ca.cmc.api.data.CMCResponse;
+import se.swedenconnect.ca.cmc.api.data.CMCStatusType;
+import se.swedenconnect.ca.cmc.auth.CMCUtils;
+import se.swedenconnect.ca.cmc.model.request.CMCRequestType;
+import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
+import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
+import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
+import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
+import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
 import se.swedenconnect.ca.service.base.configuration.cmc.CMCPortConstraints;
+import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
+import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,6 +75,8 @@ public class CMCApiController implements ApplicationEventPublisherAware {
   private ApplicationEventPublisher applicationEventPublisher;
   private final Map<String, CMCCaApi> cmcCaApiMap;
   private final CMCPortConstraints cmcPortConstraints;
+  private final Map<String, AuditCMCRequestParser> cmcRequestParserMap;
+  private final CAServices caServices;
 
   static {
     HEADER_MAP = new LinkedMultiValueMap<>();
@@ -61,9 +87,12 @@ public class CMCApiController implements ApplicationEventPublisherAware {
 
 
   @Autowired
-  public CMCApiController(Map<String, CMCCaApi> cmcCaApiMap, CMCPortConstraints cmcPortConstraints) {
+  public CMCApiController(Map<String, CMCCaApi> cmcCaApiMap, CMCPortConstraints cmcPortConstraints,
+    Map<String, AuditCMCRequestParser> cmcRequestParserMap, CAServices caServices) {
     this.cmcCaApiMap = cmcCaApiMap;
     this.cmcPortConstraints = cmcPortConstraints;
+    this.cmcRequestParserMap = cmcRequestParserMap;
+    this.caServices = caServices;
   }
 
   /**
@@ -97,8 +126,32 @@ public class CMCApiController implements ApplicationEventPublisherAware {
     }
 
     try {
+      final CMCRequestParser requestParser = cmcRequestParserMap.get(instance);
+      final CMCRequest cmcRequest = requestParser.parseCMCrequest(requestPayload.getBody());
+      final CMCRequestType cmcRequestType = cmcRequest.getCmcRequestType();
+      // Log request
+      switch (cmcRequestType){
+      case issueCert:
+        auditLogIssueCertRequest(cmcRequest, instance);
+        break;
+      case revoke:
+        auditLogRevokeRequest(cmcRequest, instance);
+        break;
+      }
+
+      // Perform requested operation
       final CMCCaApi cmcCaApi = cmcCaApiMap.get(instance);
       final CMCResponse cmcResponse = cmcCaApi.processRequest(requestPayload.getBody());
+
+      // Log result
+      switch (cmcRequestType){
+      case issueCert:
+        auditLogIssueCert(cmcRequest, cmcResponse, instance);
+        break;
+      case revoke:
+        auditLogRevokeCert(cmcRequest, cmcResponse, instance);
+        break;
+      }
 
       return ResponseEntity
         .ok()
@@ -111,6 +164,101 @@ public class CMCApiController implements ApplicationEventPublisherAware {
       log.debug("Unable to parse CMC request: {}", ex.getMessage());
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private void auditLogIssueCertRequest(CMCRequest cmcRequest, String instance) throws IOException {
+    // Get subject name and certificate request data from CMC Request
+    CertificationRequest certificationRequest = cmcRequest.getCertificationRequest();
+    CertificateRequestMessage certificateRequestMessage = cmcRequest.getCertificateRequestMessage();
+    String subjectDn = certificationRequest != null
+    ? certificationRequest.getSubject().toString()
+    : certificateRequestMessage != null
+    ? certificateRequestMessage.getCertTemplate().getSubject().toString()
+    : "No request subject";
+
+    // We have a request. Make an audit log event
+    applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.certificateRequested,
+      new CAAuditEventData(
+        instance,
+        subjectDn),
+      null, "CMC-Client"));
+    if (log.isTraceEnabled()){
+      String certReqString = certificationRequest != null
+        ? Base64.toBase64String(certificationRequest.getEncoded())
+        : certificateRequestMessage != null
+        ? Base64.toBase64String(certificateRequestMessage.getEncoded())
+        : "#NULL";
+      log.trace("Certifcate request for {} using request\n{}", subjectDn, certReqString);
+    }
+  }
+
+  private void auditLogIssueCert(CMCRequest cmcRequest, CMCResponse cmcResponse, String instance)
+    throws CertificateEncodingException, IOException {
+
+    final List<X509Certificate> returnCertificates = cmcResponse.getReturnCertificates();
+    if (returnCertificates == null || returnCertificates.size() != 1){
+      log.warn("CA failed to issue certificate");
+      return;
+    }
+    X509CertificateHolder certificateHolder = new JcaX509CertificateHolder(returnCertificates.get(0));
+
+    //Create certificate issuance audit log event
+    applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.certificateIssued,
+      new CAAuditEventData(
+        instance,
+        Base64.toBase64String(certificateHolder.getEncoded()),
+        certificateHolder.getSerialNumber(),
+        certificateHolder.getSubject().toString()
+      ),null, "CMC-Client"));
+
+    log.info("Certificate issued to {}", certificateHolder.getSubject().toString());
+    if (log.isTraceEnabled()){
+      log.trace("Issued Certificate: {}", Base64.toBase64String(certificateHolder.getEncoded()));
+    }
+  }
+
+  private void auditLogRevokeRequest(CMCRequest cmcRequest, String instance) throws IOException {
+
+    PKIData pkiData = cmcRequest.getPkiData();
+    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest, pkiData);
+    RevokeRequest revokeRequest = (RevokeRequest) cmcControlObject.getValue();
+
+    //Audit log revocation request
+    applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.revocationRequested,
+      CAAuditEventData.builder()
+        .caInstance(instance)
+        .certSerialNumber(revokeRequest.getSerialNumber())
+        .reason(0)
+        .build(), null, "CMC-Client"));
+  }
+
+  private void auditLogRevokeCert(CMCRequest cmcRequest, CMCResponse cmcResponse, String instance)
+    throws IOException, ParseException, CertificateException {
+
+    PKIData pkiData = cmcRequest.getPkiData();
+    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest, pkiData);
+    RevokeRequest revokeRequest = (RevokeRequest) cmcControlObject.getValue();
+
+    final CMCStatusType status = cmcResponse.getResponseStatus().getStatus();
+    if (!status.equals(CMCStatusType.success)){
+      log.warn("Failed to process revocation request via CMC for serial number {}", revokeRequest.getSerialNumber());
+      return;
+    }
+
+    final CertificateRecord certificate = caServices.getCAService(instance)
+      .getCaRepository()
+      .getCertificate(revokeRequest.getSerialNumber());
+    String subjectDn = BasicX509Utils.getCertificate(certificate.getCertificate()).getSubjectX500Principal().toString();
+
+    //Audit log revocation event
+    applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.certificateRevoked,
+      CAAuditEventData.builder()
+        .caInstance(instance)
+        .subject(subjectDn)
+        .certSerialNumber(revokeRequest.getSerialNumber())
+        .revocationTime(revokeRequest.getInvalidityDate().getDate())
+        .reason(0)
+        .build(), null, "CMC-Client"));
   }
 
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {

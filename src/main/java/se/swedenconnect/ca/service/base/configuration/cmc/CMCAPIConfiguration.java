@@ -35,6 +35,7 @@ import se.swedenconnect.ca.cmc.auth.CMCValidator;
 import se.swedenconnect.ca.cmc.auth.impl.DefaultCMCValidator;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.engine.configuration.CAAlgorithmRegistry;
+import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
 import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
@@ -101,6 +102,17 @@ public class CMCAPIConfiguration {
       }
     }
     return cmcCaApiMap;
+  }
+
+  @Bean
+  Map<String, AuditCMCRequestParser> cmcRequestParserMap (CAServices caServices, CMCConfigProperties cmcConfigProperties) throws IOException {
+    Map<String, AuditCMCRequestParser> requestParserMap = new HashMap<>();
+    final List<String> caServiceKeys = caServices.getCAServiceKeys();
+    for (String instanceKey : caServiceKeys) {
+      AuditCMCRequestParser requestParser = new AuditCMCRequestParser(getCMCValidator(instanceKey, cmcConfigProperties));
+      requestParserMap.put(instanceKey, requestParser);
+    }
+    return requestParserMap;
   }
 
   private CMCValidator getCMCValidator(String instanceKey, CMCConfigProperties cmcConfigProp) throws IOException {
