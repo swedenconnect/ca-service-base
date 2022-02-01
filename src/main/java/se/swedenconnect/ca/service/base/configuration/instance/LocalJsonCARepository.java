@@ -156,6 +156,8 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
       Collections.reverse(records);
     }
 
+    page = page < 0 ? 0 : page;
+
     int startIdx = page * pageSize;
     int endIdx = startIdx + pageSize;
 
