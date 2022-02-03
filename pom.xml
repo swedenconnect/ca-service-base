@@ -10,13 +10,13 @@
     </parent>
     <groupId>se.swedenconnect.ca</groupId>
     <artifactId>ca-service-base</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <name>ca-service-base</name>
     <description>Certification Authority service base project</description>
     <properties>
         <java.version>11</java.version>
-        <ca.engine.version>1.1.0</ca.engine.version>
-        <ca.cmc.version>1.1.0</ca.cmc.version>
+        <ca.engine.version>1.1.1</ca.engine.version>
+        <ca.cmc.version>1.1.1</ca.cmc.version>
     </properties>
     <dependencies>
         <dependency>
