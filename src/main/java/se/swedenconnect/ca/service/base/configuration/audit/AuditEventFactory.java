@@ -88,6 +88,9 @@ public class AuditEventFactory {
         case crlPublished:
             data.put("CRLnumber", eventData.getCrlNumber());
             break;
+        case expiredCertDeleted:
+            data.put("serialNumber" ,eventData.getCertSerialNumber().toString(16));
+            break;
         }
 
         return new AuditApplicationEvent(principal, event.getEventName(), data);
