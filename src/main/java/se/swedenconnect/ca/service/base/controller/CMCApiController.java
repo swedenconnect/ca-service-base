@@ -19,6 +19,9 @@ package se.swedenconnect.ca.service.base.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.cmc.*;
+import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.crmf.CertificateRequestMessage;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -39,6 +42,8 @@ import se.swedenconnect.ca.cmc.api.data.CMCResponse;
 import se.swedenconnect.ca.cmc.api.data.CMCStatusType;
 import se.swedenconnect.ca.cmc.auth.CMCUtils;
 import se.swedenconnect.ca.cmc.model.request.CMCRequestType;
+import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
@@ -245,9 +250,8 @@ public class CMCApiController implements ApplicationEventPublisherAware {
       return;
     }
 
-    final CertificateRecord certificate = caServices.getCAService(instance)
-      .getCaRepository()
-      .getCertificate(revokeRequest.getSerialNumber());
+    final CARepository caRepository = caServices.getCAService(instance).getCaRepository();
+    final CertificateRecord certificate = caRepository.getCertificate(revokeRequest.getSerialNumber());
     String subjectDn = BasicX509Utils.getCertificate(certificate.getCertificate()).getSubjectX500Principal().toString();
 
     //Audit log revocation event
@@ -258,6 +262,16 @@ public class CMCApiController implements ApplicationEventPublisherAware {
         .certSerialNumber(revokeRequest.getSerialNumber())
         .revocationTime(revokeRequest.getInvalidityDate().getDate())
         .reason(0)
+        .build(), null, "CMC-Client"));
+
+    final X509CRLHolder currentCrl = caRepository.getCRLRevocationDataProvider().getCurrentCrl();
+    Extension crlNumberExtension = currentCrl.getExtension(Extension.cRLNumber);
+    CRLNumber crlNumberFromCrl = CRLNumber.getInstance(crlNumberExtension.getParsedValue());
+    log.info("Succeeded to publish new CRL with CRL number {}", crlNumberFromCrl.getCRLNumber().toString());
+    // Audit log CRL publication
+    applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.crlPublished,
+      CAAuditEventData.builder()
+        .crlNumber(crlNumberFromCrl.getCRLNumber())
         .build(), null, "CMC-Client"));
   }
 
