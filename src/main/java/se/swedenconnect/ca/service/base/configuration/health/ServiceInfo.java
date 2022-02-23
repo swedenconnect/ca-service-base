@@ -16,6 +16,7 @@
 
 package se.swedenconnect.ca.service.base.configuration.health;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
  */
+@Slf4j
 @Configuration
 public class ServiceInfo {
 
@@ -96,7 +98,7 @@ public class ServiceInfo {
     collectServiceInfo();
     //Test basic parameters
     if (!StringUtils.hasText(caServiceInfo.getContextPath())) {
-      throw new IllegalArgumentException("Service context path is not specified");
+      log.debug("Service context path is not specified - Allowed configuration");
     }
 
     if (!StringUtils.hasText(caServiceInfo.getServiceUrl())) {

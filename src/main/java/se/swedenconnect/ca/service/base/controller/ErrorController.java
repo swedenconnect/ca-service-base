@@ -25,8 +25,6 @@ public class ErrorController implements ApplicationEventPublisherAware {
 
     private final HtmlServiceInfo htmlServiceInfo;
 
-
-    @Value("${server.servlet.context-path}") String contextPath;
     @Value("${ca-service.config.bootstrap-css}") String bootstrapCss;
 
     private ApplicationEventPublisher applicationEventPublisher;
