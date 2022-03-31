@@ -10,7 +10,7 @@
     </parent>
     <groupId>se.swedenconnect.ca</groupId>
     <artifactId>ca-service-base</artifactId>
-    <version>1.3.3</version>
+    <version>1.3.4-SNAPSHOT</version>
     <name>ca-service-base</name>
     <description>Certification Authority service base project</description>
     <properties>
