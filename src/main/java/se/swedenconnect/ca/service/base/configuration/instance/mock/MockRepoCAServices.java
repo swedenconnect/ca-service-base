@@ -23,9 +23,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
@@ -66,7 +68,7 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
   /** {@inheritDoc} */
   @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PrivateKey privateKey, List<X509CertificateHolder> caChain,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException {
+    throws NoSuchAlgorithmException, CertificateRevocationException {
     // Returning the same Basic CA service for any instance;
     return new MockCA(privateKey, caChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
@@ -78,7 +80,7 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
 
   /** {@inheritDoc} */
   @Override protected X509CertificateHolder generateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
-    throws NoSuchAlgorithmException {
+    throws NoSuchAlgorithmException, CertificateIssuanceException {
     // Use the default self issued certificate implementation provided by the abstract class
     return defaultGenerateSelfIssuedCaCert(caKeySource, caConfigData);
   }

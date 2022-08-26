@@ -30,6 +30,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.springframework.context.ApplicationEventPublisher;
 import se.swedenconnect.ca.engine.ca.attribute.CertAttributes;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuer;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.issuer.impl.BasicCertificateIssuer;
@@ -45,6 +46,7 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBui
 import se.swedenconnect.ca.engine.ca.models.cert.impl.ExplicitCertNameModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
@@ -318,7 +320,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    */
   protected abstract AbstractBasicCA getBasicCaService(String instance, String type, PrivateKey privateKey, List<X509CertificateHolder> caChain,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException;
+    throws NoSuchAlgorithmException, CertificateRevocationException;
 
   /**
    * Allows the implementation of this abstract class to modify the content of the OCSP certificate
@@ -377,7 +379,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    */
   protected abstract X509CertificateHolder generateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
-    throws NoSuchAlgorithmException;
+    throws NoSuchAlgorithmException, CertificateIssuanceException;
 
   /**
    * Default implementation of the self issued cert generation that may be used when implementing the generateSelfIssuedCaCert abstract method
@@ -388,7 +390,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    */
   protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData)
-    throws NoSuchAlgorithmException {
+    throws NoSuchAlgorithmException, CertificateIssuanceException {
     CAConfigData.CaConfig caConfig = caConfigData.getCa();
     if (caConfig.getSelfIssuedValidYears() == null) {
       log.error("Illegal self issued validity configuration");

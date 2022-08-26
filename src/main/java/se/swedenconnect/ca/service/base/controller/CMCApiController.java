@@ -252,7 +252,9 @@ public class CMCApiController implements ApplicationEventPublisherAware {
 
     final CARepository caRepository = caServices.getCAService(instance).getCaRepository();
     final CertificateRecord certificate = caRepository.getCertificate(revokeRequest.getSerialNumber());
-    String subjectDn = BasicX509Utils.getCertificate(certificate.getCertificate()).getSubjectX500Principal().toString();
+    String subjectDn = certificate != null
+      ? BasicX509Utils.getCertificate(certificate.getCertificate()).getSubjectX500Principal().toString()
+      : "unknown";
 
     //Audit log revocation event
     applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.certificateRevoked,

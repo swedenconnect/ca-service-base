@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import java.util.Calendar;
 
 /**
- * Description
+ * CA instance configuration data
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -52,6 +52,7 @@ public class CAConfigData {
     ValidityData crlValidity;
     KeySourceData keySource;
     EntityNameProperties name;
+    String customCertStorageLocation;
   }
   @Data
   @NoArgsConstructor

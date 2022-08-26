@@ -25,6 +25,7 @@ import se.swedenconnect.ca.engine.ca.issuer.impl.AbstractCAService;
 import se.swedenconnect.ca.engine.ca.issuer.impl.BasicCertificateIssuer;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuer;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.crl.impl.DefaultCRLIssuer;
@@ -54,7 +55,7 @@ public abstract class AbstractBasicCA extends AbstractCAService<DefaultCertifica
 
   public AbstractBasicCA(PrivateKey privateKey, List<X509CertificateHolder> caCertificateChain, CARepository caRepository,
     CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException {
+    throws NoSuchAlgorithmException, CertificateRevocationException {
     super(caCertificateChain, caRepository);
     this.certificateIssuer = new BasicCertificateIssuer(certIssuerModel, getCaCertificate().getSubject(), privateKey);
     if (crlIssuerModel != null) {

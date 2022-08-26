@@ -95,6 +95,8 @@ public class CAServiceBaseDaemon implements ApplicationEventPublisherAware, Init
           }
         }
       }
+    } else {
+      log.debug("Deletion of expired certificates is disabled");
     }
   }
 

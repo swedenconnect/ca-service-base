@@ -88,6 +88,7 @@ public class InstanceConfiguration {
     caConfig.setKeySource(getKeySource(prop.getKeySource(), defaultVal.getKeySource()));
     caConfig.setValidity(getValidityData(prop.getValidity(), defaultVal.getValidity()));
     caConfig.setCrlValidity(getValidityData(prop.getCrlValidity(), defaultVal.getCrlValidity()));
+    caConfig.setCustomCertStorageLocation((String) getValue(prop.getCustomCertStorageLocation(), defaultVal.getCustomCertStorageLocation()));
     caConfig.setName(getName(prop.getName()));
     return caConfig;
   }
