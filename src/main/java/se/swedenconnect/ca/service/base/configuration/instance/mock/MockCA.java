@@ -28,10 +28,13 @@ import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
+import se.swedenconnect.security.credential.PkiCredential;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 /**
@@ -42,11 +45,11 @@ import java.util.List;
  */
 public class MockCA extends AbstractBasicCA {
 
-  public MockCA(PrivateKey privateKey, List<X509CertificateHolder> caCertificateChain,
+  public MockCA(PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel,
     CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, CertificateRevocationException {
-    super(privateKey, caCertificateChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
+    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+    super(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   @Override protected DefaultCertificateModelBuilder getBaseCertificateModelBuilder(CertNameModel subject, PublicKey publicKey,

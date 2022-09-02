@@ -23,9 +23,11 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
+import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
 import java.io.*;
 import java.security.cert.CertificateEncodingException;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -91,6 +93,22 @@ public class GeneralCAUtils {
       return new File(GeneralCAUtils.class.getResource("/" + filename.substring(10)).getFile());
     }
     return new File(filename);
+  }
+
+  public static Duration getDurationFromTypeAndValue(CAConfigData.ValidityUnit unit, Integer amount) {
+    switch (unit) {
+    case M:
+      return Duration.ofMinutes(amount);
+    case H:
+      return Duration.ofHours(amount);
+    case D:
+      return Duration.ofDays(amount);
+    case Y:
+      int days = ((amount * 1461) / 4);
+      return Duration.ofDays(days);
+    default:
+      return Duration.ofMillis(amount);
+    }
   }
 
 

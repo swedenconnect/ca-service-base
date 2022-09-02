@@ -20,25 +20,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
-import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
 import se.swedenconnect.ca.service.base.configuration.instance.impl.AbstractDefaultCAServices;
-import se.swedenconnect.ca.service.base.configuration.keys.LocalKeySource;
+import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
-import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
+import se.swedenconnect.security.credential.PkiCredential;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -60,17 +58,17 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
 
   @Autowired
   public MockRepoCAServices(InstanceConfiguration instanceConfiguration,
-    PKCS11Provider pkcs11Provider, BasicServiceConfig basicServiceConfig, Map<String,
+    PkiCredentialFactory pkiCredentialFactory, BasicServiceConfig basicServiceConfig, Map<String,
     CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher) {
-    super(instanceConfiguration, pkcs11Provider, basicServiceConfig, caRepositoryMap, applicationEventPublisher);
+    super(instanceConfiguration, pkiCredentialFactory, basicServiceConfig, caRepositoryMap, applicationEventPublisher);
   }
 
   /** {@inheritDoc} */
-  @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PrivateKey privateKey, List<X509CertificateHolder> caChain,
+  @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, CertificateRevocationException {
+    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     // Returning the same Basic CA service for any instance;
-    return new MockCA(privateKey, caChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
+    return new MockCA(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   /** {@inheritDoc} */
@@ -79,7 +77,7 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
   }
 
   /** {@inheritDoc} */
-  @Override protected X509CertificateHolder generateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
+  @Override protected X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, CertificateIssuanceException {
     // Use the default self issued certificate implementation provided by the abstract class
     return defaultGenerateSelfIssuedCaCert(caKeySource, caConfigData);

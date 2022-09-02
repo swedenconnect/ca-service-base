@@ -30,9 +30,12 @@ import se.swedenconnect.ca.engine.revocation.crl.CRLIssuer;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.crl.impl.DefaultCRLIssuer;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
+import se.swedenconnect.security.credential.PkiCredential;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 /**
@@ -53,13 +56,13 @@ public abstract class AbstractBasicCA extends AbstractCAService<DefaultCertifica
   @Getter protected final List<String> crlDistributionPoints;
   @Setter @Getter protected String ocspResponderUrl;
 
-  public AbstractBasicCA(PrivateKey privateKey, List<X509CertificateHolder> caCertificateChain, CARepository caRepository,
+  public AbstractBasicCA(PkiCredential issuerCredential, CARepository caRepository,
     CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, CertificateRevocationException {
-    super(caCertificateChain, caRepository);
-    this.certificateIssuer = new BasicCertificateIssuer(certIssuerModel, getCaCertificate().getSubject(), privateKey);
+    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+    super(issuerCredential, caRepository);
+    this.certificateIssuer = new BasicCertificateIssuer(certIssuerModel, issuerCredential);
     if (crlIssuerModel != null) {
-      this.crlIssuer = new DefaultCRLIssuer(crlIssuerModel, privateKey);
+      this.crlIssuer = new DefaultCRLIssuer(crlIssuerModel, issuerCredential);
       // Make sure that at least one CRL is published
       if (getCurrentCrl() == null) {
         publishNewCrl();

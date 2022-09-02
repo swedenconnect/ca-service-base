@@ -17,8 +17,7 @@
 package se.swedenconnect.ca.service.base.configuration.instance;
 
 import lombok.Getter;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.context.annotation.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.configuration.properties.CAServiceProperties;

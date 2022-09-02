@@ -17,7 +17,7 @@
 package se.swedenconnect.ca.service.base.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +32,10 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.service.base.configuration.audit.CAServiceContextListener;
 import se.swedenconnect.ca.service.base.configuration.audit.ExtSyslogMessageSender;
-import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.instance.LocalJsonCARepository;
-import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
+import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 
 import javax.servlet.ServletContextListener;
 import java.io.File;
@@ -83,9 +78,9 @@ public class BeanConfig implements ApplicationEventPublisherAware {
     @Value("${server.servlet.context-path:#{null}}") String serviceContextPath
   ) {
     Security.insertProviderAt(new BouncyCastleProvider(),1);
-    log.info("Available crypto providers: {}", String.join(",", Arrays.stream(Security.getProviders())
+    log.info("Available crypto providers: {}", Arrays.stream(Security.getProviders())
       .map(Provider::getName)
-      .collect(Collectors.toList())));
+      .collect(Collectors.joining(",")));
     final Provider bcProvider = Security.getProvider("BC");
     log.info("Bouncycastle version: {}", bcProvider.getVersionStr());
     log.info("JRE Path: {}", System.getProperty("java.home"));
@@ -109,6 +104,20 @@ public class BeanConfig implements ApplicationEventPublisherAware {
       : serviceBaseUrl + serviceContextPath);
     basicServiceConfig.setServiceHostUrl(serviceBaseUrl);
     return basicServiceConfig;
+  }
+
+  @Bean
+  PkiCredentialFactory pkiCredentialFactory(
+    @Value("${ca-service.pkcs11.external-config-locations:#{null}}") List<String> hsmExternalCfgLocations) {
+
+    if (hsmExternalCfgLocations != null && hsmExternalCfgLocations.size() != 1){
+      throw new RuntimeException("Only one PKCS11 config file is allowed");
+    }
+
+    PkiCredentialFactory pkiCredentialFactory = new PkiCredentialFactory(
+      hsmExternalCfgLocations == null ? null : hsmExternalCfgLocations.get(0));
+    pkiCredentialFactory.setMockKeyLen(3072);
+    return pkiCredentialFactory;
   }
 
   @Bean

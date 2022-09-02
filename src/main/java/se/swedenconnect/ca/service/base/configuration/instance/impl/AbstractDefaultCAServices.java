@@ -18,7 +18,7 @@ package se.swedenconnect.ca.service.base.configuration.instance.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
@@ -46,11 +46,13 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBui
 import se.swedenconnect.ca.engine.ca.models.cert.impl.ExplicitCertNameModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.engine.configuration.ExternalChainCredential;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
 import se.swedenconnect.ca.engine.revocation.ocsp.impl.RepositoryBasedOCSPResponder;
+import se.swedenconnect.ca.engine.utils.CAUtils;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
@@ -58,17 +60,19 @@ import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
-import se.swedenconnect.ca.service.base.configuration.keys.LocalKeySource;
+import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.configuration.properties.EntityNameProperties;
-import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
+import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
+import se.swedenconnect.security.credential.PkiCredential;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,16 +99,16 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   private File instancesDir;
   private Map<String, CAConfigData> instanceConfigMap;
   private Map<String, CAService> caServicesMap;
-  private final PKCS11Provider pkcs11Provider;
+  private final PkiCredentialFactory pkiCredentialFactory;
   private final BasicServiceConfig basicServiceConfig;
   private final Map<String, CARepository> caRepositoryMap;
   private final ApplicationEventPublisher applicationEventPublisher;
 
-  public AbstractDefaultCAServices(InstanceConfiguration instanceConfiguration, PKCS11Provider pkcs11Provider,
+  public AbstractDefaultCAServices(InstanceConfiguration instanceConfiguration, PkiCredentialFactory pkiCredentialFactory,
     BasicServiceConfig basicServiceConfig, Map<String, CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher) {
     super(instanceConfiguration);
     this.applicationEventPublisher = applicationEventPublisher;
-    this.pkcs11Provider = pkcs11Provider;
+    this.pkiCredentialFactory = pkiCredentialFactory;
     this.basicServiceConfig = basicServiceConfig;
     this.instancesDir = new File(basicServiceConfig.getDataStoreLocation(), "instances");
     this.instanceConfigMap = instanceConfiguration.getInstanceConfigMap();
@@ -147,14 +151,16 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       File repositoryDir = createOrLoadDir(instanceDir, "repository");
 
       log.debug("Creating the local key store for the CA of instance {}", instance);
-      LocalKeySource caKeySource = getKeySource(caKeyConf, keyDir, "ca",
+      ExternalChainCredential caKeySource = getKeySource(caKeyConf, keyDir, "ca",
         keyDir, certsDir, repositoryDir);
+      assert caKeySource != null;
 
       // Locate any existing CA Certs
       String chainFileName = locateFile(certsDir, "chain.pem", null);
       List<X509CertificateHolder> caChain = getCertChainFromPemFile(chainFileName);
       log.debug("Found {} preconfigured certificates in the CA certificate chain", caChain.size());
       X509CertificateHolder caCert;
+
       if (caChain.isEmpty()) {
         // There is no chain stored on file. Generate and save new self issued CA cert
         log.debug("Generating new self signed certificate for instance {}", instance);
@@ -171,6 +177,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
 
         log.debug("Self signed CA cert issued for {}", caCert.getSubject().toString());
         caChain = Collections.singletonList(caCert);
+        // Set the created CA chain as the credential chain
         File chainFile = new File(certsDir, "ca-chain.pem");
         File selfIssuedCaCertFile = new File(certsDir, "ca-self-signed.crt");
         FileUtils.writeStringToFile(chainFile, BasicX509Utils.getPemCert(caCert.getEncoded()));
@@ -189,6 +196,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
 
       // As we validated that the first certificate is the CA certificate. Make sure that the rest of the chain is in order:
       caChain = BasicX509Utils.getOrderedCertList(caChain, caCert);
+      // Finally, assign the certificate chain to the key source
+      caKeySource.setCertificateChain(CAUtils.getCertList(caChain));
       if (log.isDebugEnabled()){
         log.debug("Final ordered chain for ca instance {} is {}", instance,
           String.join(", ", caChain.stream().map(x509CertificateHolder -> x509CertificateHolder.getSubject().toString()).collect(Collectors.toList()))
@@ -205,8 +214,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       // Create CA service with repository and CRL service
       log.debug("Instantiating the CA Service with CRL issuer for instance {}", instance);
       CertificateIssuerModel certIssuerModel = getCertificateIssuerModel(caConfig);
-      AbstractBasicCA caService = getBasicCaService(instance, caConfig.getType() ,caKeySource.getCredential().getPrivateKey(),
-        caChain, caRepository, certIssuerModel, crlIssuerModel, Collections.singletonList(crlDistrPoint));
+      AbstractBasicCA caService = getBasicCaService(instance, caConfig.getType() ,caKeySource, caRepository,
+        certIssuerModel, crlIssuerModel, Collections.singletonList(crlDistrPoint));
 
       // Get OCSP service
       log.debug("Setting up OCSP responder for instance {}", instance);
@@ -215,12 +224,12 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       if (ocspEnabled) {
         // OCSP service is enabled for this CA. Get the configured key source
         log.debug("Setting up key source for OCSP responder {}", instance);
-        LocalKeySource ocspKeySource = getKeySource(ocspKeyConf, keyDir, "ocsp");
-        // Determine if the OCSP responder is a separate entity based on whether we found a separate OCSP responder key
-        boolean separateOcspEntity = ocspKeySource != null;
         // Set initial values for the OCSP certificate chain and algorithm
         List<X509CertificateHolder> ocspServiceChain = new ArrayList<>(caChain);
         String ocspAlgorithm = caConfig.getAlgorithm();
+        ExternalChainCredential ocspKeySource = getKeySource(ocspKeyConf, keyDir, "ocsp");
+        // Determine if the OCSP responder is a separate entity based on whether we found a separate OCSP responder key
+        boolean separateOcspEntity = ocspKeySource != null;
 
         X509CertificateHolder ocspIssuerCert = null;
         if (separateOcspEntity) {
@@ -265,6 +274,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
           ocspServiceChain.add(ocspIssuerCert);
           // Sort certificate chain order
           ocspServiceChain = BasicX509Utils.getOrderedCertList(ocspServiceChain, ocspIssuerCert);
+          // Finally, assign the certificate chain to the OCSP key source
+          ocspKeySource.setCertificateChain(CAUtils.getCertList(ocspServiceChain));
           log.debug("Setting up OCSP responder with issuer certificate containing {} certificates", ocspServiceChain.size());
           // Pick the first cert in the chain as the OCSP certificate
           ocspIssuerCert = ocspServiceChain.get(0);
@@ -280,8 +291,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
 
         // Now we have everything to create the OCSP service instance
         log.debug("Instantiating OCSP responder for instance {}", instance);
-        OCSPModel ocspModel = getOCSPmodel(ocspServiceChain, caService.getCaCertificate(), ocspAlgorithm, ocspConfig);
-        OCSPResponder ocspResponder = new RepositoryBasedOCSPResponder(ocspKeySource.getCredential().getPrivateKey(), ocspModel,
+        OCSPModel ocspModel = getOCSPmodel(caService.getCaCertificate(), ocspAlgorithm, ocspConfig);
+        OCSPResponder ocspResponder = new RepositoryBasedOCSPResponder(ocspKeySource, ocspModel,
           caRepository);
         // Add the OCSP responder to the CA service
         log.debug("Adding OCSP responder to instance {}", instance);
@@ -309,8 +320,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   /**
    * Creates an instance of a Basic CA Service
    * @param instance the instance of the CA being created
-   * @param privateKey private key
-   * @param caChain CA Certificate chain with the CA certificate as the first certificate in the list
+   * @param issuerCredential private key and certificate chain credential of the issuing CA
    * @param caRepository CA Repository
    * @param certIssuerModel Certificate issuance model
    * @param crlIssuerModel CRL issuer model
@@ -318,9 +328,9 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @return Basic CA Service instance
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    */
-  protected abstract AbstractBasicCA getBasicCaService(String instance, String type, PrivateKey privateKey, List<X509CertificateHolder> caChain,
+  protected abstract AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, CertificateRevocationException;
+    throws NoSuchAlgorithmException, IOException, CertificateEncodingException;
 
   /**
    * Allows the implementation of this abstract class to modify the content of the OCSP certificate
@@ -329,7 +339,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    */
   protected abstract void customizeOcspCertificateModel(DefaultCertificateModelBuilder certModelBuilder, String instance);
 
-  protected X509CertificateHolder generateOcspCertificate(LocalKeySource caKeySource, X509CertificateHolder issuerCert,
+  protected X509CertificateHolder generateOcspCertificate(PkiCredential caKeySource, X509CertificateHolder issuerCert,
     PublicKey ocspPublicKey, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, IOException {
     CAConfigData.CaConfig caConfig = caConfigData.getCa();
@@ -345,11 +355,12 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
     if (ocspCertValidityAmount != null && ocspCertValidityAmount > 0){
       validityAmount = ocspCertValidityAmount;
     }
-    CertificateIssuerModel certificateIssuerModel = new CertificateIssuerModel(caConfig.getAlgorithm(), validityAmount);
-    certificateIssuerModel.setExpiryOffsetType(validity.getUnit().getUnitType());
-    certificateIssuerModel.setStartOffsetAmount(validity.getStartOffsetSec());
+    CertificateIssuerModel certificateIssuerModel = new CertificateIssuerModel(caConfig.getAlgorithm(), GeneralCAUtils.getDurationFromTypeAndValue(
+      CAConfigData.ValidityUnit.Y, caConfig.getSelfIssuedValidYears()));
+    certificateIssuerModel.setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(validity.getUnit(), validity.getAmount()));
+    certificateIssuerModel.setStartOffset(Duration.ofSeconds(validity.getStartOffsetSec()));
 
-    CertificateIssuer issuer = new BasicCertificateIssuer(certificateIssuerModel,issuerCert.getSubject(), caKeySource.getCredential().getPrivateKey());
+    CertificateIssuer issuer = new BasicCertificateIssuer(certificateIssuerModel, caKeySource);
     DefaultCertificateModelBuilder certModelBuilder = DefaultCertificateModelBuilder.getInstance(
       ocspPublicKey, issuerCert, certificateIssuerModel)
       .subject(getSubjectNameModel(ocspConfig.getName()))
@@ -378,7 +389,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @return self issued certificate
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    */
-  protected abstract X509CertificateHolder generateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
+  protected abstract X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, CertificateIssuanceException;
 
   /**
@@ -389,7 +400,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @return self issued certificate
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    */
-  protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData)
+  protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData)
     throws NoSuchAlgorithmException, CertificateIssuanceException {
     CAConfigData.CaConfig caConfig = caConfigData.getCa();
     if (caConfig.getSelfIssuedValidYears() == null) {
@@ -399,11 +410,11 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
 
     CertificateIssuerModel certificateIssuerModel = new CertificateIssuerModel(
       caConfig.getAlgorithm(),
-      caConfig.getSelfIssuedValidYears()
+      GeneralCAUtils.getDurationFromTypeAndValue(CAConfigData.ValidityUnit.Y, caConfig.getSelfIssuedValidYears())
     );
     CertificateIssuer issuer = new SelfIssuedCertificateIssuer(certificateIssuerModel);
     CertificateModel certModel = SelfIssuedCertificateModelBuilder.getInstance(
-      caKeySource.getCredential().getPrivateKey(),
+      caKeySource.getPrivateKey(),
       caKeySource.getCertificate().getPublicKey(),
       certificateIssuerModel)
       .subject(getSubjectNameModel(caConfig.getName()))
@@ -422,10 +433,10 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param certificate certificate for the public key of the key source
    * @throws IOException on error in the input data
    */
-  private void validateCertAndKey(LocalKeySource keySource, X509CertificateHolder certificate) throws IOException {
+  private void validateCertAndKey(PkiCredential keySource, X509CertificateHolder certificate) throws IOException {
     assert keySource != null;
     boolean caCertKeyMatch = Arrays.equals(
-      Objects.requireNonNull(keySource.getCredential().getPublicKey()).getEncoded(),
+      Objects.requireNonNull(keySource.getCertificate().getPublicKey()).getEncoded(),
       certificate.getSubjectPublicKeyInfo().getEncoded()
     );
     if (!caCertKeyMatch) {
@@ -443,10 +454,11 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param keyConf          key configuration data from properties settings of this key
    * @param keyDir           the directory where key and key cert files are located
    * @param entityIdentifier a prefix that must occur before the file extension of relevant key resource files
-   * @param cleanDirs        a list of directories that should be wiped of all content if this key is created from sratch to delete history of old key
+   * @param cleanDirs        a list of directories that should be wiped of all content if this key is created from scratch to delete history of any old key
    * @return key source
    */
-  private LocalKeySource getKeySource(CAConfigData.KeySourceData keyConf, File keyDir, String entityIdentifier, File... cleanDirs) {
+  private ExternalChainCredential getKeySource(CAConfigData.KeySourceData keyConf, File keyDir, String entityIdentifier, File... cleanDirs)
+    throws Exception {
     String keyLocation = null;
     String certLocation = null;
     switch (keyConf.getType()) {
@@ -475,30 +487,31 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       break;
     }
 
-    return new LocalKeySource(keyConf.getType().name(),
-      keyLocation, keyConf.getPass(), keyConf.getAlias(), certLocation, pkcs11Provider, keyConf.getReloadableKeys());
+    File certFile = certLocation != null ? new File(certLocation) : null;
+    assert keyLocation != null;
+    return pkiCredentialFactory.getCredential(keyConf.getType(), new File(keyLocation), keyConf.getAlias(), keyConf.getPass().toCharArray(),
+      certFile);
   }
 
   /**
    * Setup the OCSP model
    *
-   * @param ocspServiceChain certificate chain for the OCSP responder
    * @param caCertificate    CA certificate used to issue the certificates that are checked for revocation
    * @param ocspAlgorithm    the algorithm URI representing the OCSP response signing algorithm
    * @param ocspConfig       configuration data for the OCSP responder
    * @return OCSP model
    */
-  private OCSPModel getOCSPmodel(List<X509CertificateHolder> ocspServiceChain, X509CertificateHolder caCertificate, String ocspAlgorithm,
+  private OCSPModel getOCSPmodel(X509CertificateHolder caCertificate, String ocspAlgorithm,
     CAConfigData.OCSPConfig ocspConfig) {
-    OCSPModel ocspModel = new OCSPModel(ocspServiceChain, caCertificate, ocspAlgorithm);
+    OCSPModel ocspModel = new OCSPModel(caCertificate, ocspAlgorithm);
 
     CAConfigData.ValidityData validity = ocspConfig.getValidity();
-    if (validity.getUnit() != null) {
-      ocspModel.setExpiryOffsetType(validity.getUnit().getUnitType());
-    }
-    ocspModel.setExpiryOffsetAmount(validity.getAmount());
-    ocspModel.setStartOffsetType(Calendar.SECOND);
-    ocspModel.setStartOffsetAmount(validity.getStartOffsetSec());
+    Objects.requireNonNull(validity.getUnit());
+    Objects.requireNonNull(validity.getAmount());
+    Objects.requireNonNull(validity.getStartOffsetSec());
+
+    ocspModel.setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(validity.getUnit(), validity.getAmount()));
+    ocspModel.setStartOffset(Duration.ofSeconds(validity.getStartOffsetSec()));
     return ocspModel;
   }
 
@@ -543,14 +556,14 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
     CRLIssuerModel crlIssuerModel = new CRLIssuerModel(
       caCert,
       caConfig.getAlgorithm(),
-      crlValidity.getAmount(),
+      Duration.ofHours(crlValidity.getAmount()),
       repository.getCRLRevocationDataProvider(),
       distributionPointUrl);
 
     if (crlValidity.getUnit() != CAConfigData.ValidityUnit.H) {
-      crlIssuerModel.setExpiryOffsetType(crlValidity.getUnit().getUnitType());
+      crlIssuerModel.setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(crlValidity.getUnit(), crlValidity.getAmount()));
     }
-    crlIssuerModel.setStartOffsetAmount(crlValidity.getStartOffsetSec());
+    crlIssuerModel.setStartOffset(Duration.ofSeconds(crlValidity.getStartOffsetSec()));
     return crlIssuerModel;
   }
 
@@ -562,9 +575,9 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    */
   private CertificateIssuerModel getCertificateIssuerModel(CAConfigData.CaConfig caConfig) throws NoSuchAlgorithmException {
     CAConfigData.ValidityData validity = caConfig.getValidity();
-    CertificateIssuerModel certIssuerModel = new CertificateIssuerModel(caConfig.getAlgorithm(), validity.getAmount());
-    certIssuerModel.setExpiryOffsetType(validity.getUnit().getUnitType());
-    certIssuerModel.setStartOffsetAmount(validity.getStartOffsetSec());
+    CertificateIssuerModel certIssuerModel = new CertificateIssuerModel(caConfig.getAlgorithm(), GeneralCAUtils.getDurationFromTypeAndValue(
+      CAConfigData.ValidityUnit.Y, validity.getAmount()));
+    certIssuerModel.setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(validity.getUnit(), validity.getAmount()));
     return certIssuerModel;
   }
 
