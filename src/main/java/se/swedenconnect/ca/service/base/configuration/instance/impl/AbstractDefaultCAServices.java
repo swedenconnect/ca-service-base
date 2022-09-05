@@ -312,7 +312,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
     catch (Exception ex) {
       // Catching any error here represents a fatal error in the CA configuration setup.
       log.error("Failure to create CA instance {}", instance, ex);
-      return null;
+      throw new RuntimeException(ex);
     }
 
   }
@@ -487,10 +487,12 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       break;
     }
 
-    File certFile = certLocation != null ? new File(certLocation) : null;
-    assert keyLocation != null;
-    return pkiCredentialFactory.getCredential(keyConf.getType(), new File(keyLocation), keyConf.getAlias(), keyConf.getPass().toCharArray(),
-      certFile);
+    return pkiCredentialFactory.getCredential(
+      keyConf.getType(),
+      keyLocation != null ? new File(keyLocation) : null,
+      keyConf.getAlias(),
+      keyConf.getPass() != null ? keyConf.getPass().toCharArray() : null,
+      certLocation != null ? new File(certLocation) : null);
   }
 
   /**

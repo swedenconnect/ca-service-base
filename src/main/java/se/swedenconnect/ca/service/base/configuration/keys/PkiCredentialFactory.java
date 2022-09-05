@@ -71,6 +71,7 @@ public class PkiCredentialFactory {
         switch (keySourceType) {
         case jks:
         case pkcs12:
+            Objects.requireNonNull(keySourceLocation, "Key source location must not be null for key store key sources");
             KeyStoreCredential keyStoreCredential = new KeyStoreCredential(
               new FileSystemResource(keySourceLocation),
               keySourceType.name().toUpperCase(),
@@ -79,7 +80,7 @@ public class PkiCredentialFactory {
             keyStoreCredential.init();
             return new ExternalChainCredential(keyStoreCredential);
         case pkcs11:
-            assert pkcs11Provider != null;
+            Objects.requireNonNull(pkcs11Provider, "PKCS11 provider must be set for PKCS 11 key sources");
             KeyStoreCredential p11Credential = new KeyStoreCredential(
               null, "PKCS11", pkcs11Provider.getName(),
               password, alias, null
@@ -87,7 +88,8 @@ public class PkiCredentialFactory {
             p11Credential.init();
             return new ExternalChainCredential(p11Credential);
         case pem:
-            assert certificateFile != null;
+            Objects.requireNonNull(keySourceLocation, "Key source location must not be null for pem key sources");
+            Objects.requireNonNull(certificateFile, "Certificate file location must not be null for pem key sources");
             PEMKey pemKey = new PEMKey(new FileSystemResource(keySourceLocation),
               Arrays.toString(password));
             BasicCredential pemCredential = new BasicCredential(CertUtil.readCertificate(certificateFile),
