@@ -18,7 +18,10 @@ package se.swedenconnect.ca.service.base.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.asn1.cmc.*;
+import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
+import org.bouncycastle.asn1.cmc.CertificationRequest;
+import org.bouncycastle.asn1.cmc.PKIData;
+import org.bouncycastle.asn1.cmc.RevokeRequest;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CRLHolder;
@@ -30,11 +33,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
 import se.swedenconnect.ca.cmc.api.CMCCaApi;
+import se.swedenconnect.ca.cmc.api.CMCMessageException;
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
 import se.swedenconnect.ca.cmc.api.data.CMCControlObject;
 import se.swedenconnect.ca.cmc.api.data.CMCRequest;
@@ -42,7 +53,6 @@ import se.swedenconnect.ca.cmc.api.data.CMCResponse;
 import se.swedenconnect.ca.cmc.api.data.CMCStatusType;
 import se.swedenconnect.ca.cmc.auth.CMCUtils;
 import se.swedenconnect.ca.cmc.model.request.CMCRequestType;
-import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
@@ -56,7 +66,6 @@ import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -75,7 +84,7 @@ import java.util.Map;
 public class CMCApiController implements ApplicationEventPublisherAware {
 
   private static final String CMC_MIME_TYPE = "application/pkcs7-mime";
-  private static final MultiValueMap<String,String> HEADER_MAP;
+  private static final MultiValueMap<String, String> HEADER_MAP;
 
   private ApplicationEventPublisher applicationEventPublisher;
   private final Map<String, CMCCaApi> cmcCaApiMap;
@@ -90,7 +99,6 @@ public class CMCApiController implements ApplicationEventPublisherAware {
     HEADER_MAP.add("Expires", "0");
   }
 
-
   @Autowired
   public CMCApiController(Map<String, CMCCaApi> cmcCaApiMap, CMCPortConstraints cmcPortConstraints,
     Map<String, AuditCMCRequestParser> cmcRequestParserMap, CAServices caServices) {
@@ -102,6 +110,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
 
   /**
    * Processing a POST CMC request for an CMC response for a given CA service instance
+   *
    * @param instance the CA service instance used to generate the CMC response
    * @param requestPayload the bytes received with the POST as the payload bytes
    * @param contentType HTTP Content-Type header
@@ -121,11 +130,11 @@ public class CMCApiController implements ApplicationEventPublisherAware {
       return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
-    if (!contentType.equalsIgnoreCase(CMC_MIME_TYPE)){
+    if (!contentType.equalsIgnoreCase(CMC_MIME_TYPE)) {
       log.debug("Received CMC post request for with illegal Content-Type {}", contentType);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
-    if (StringUtils.isBlank(instance) || !cmcCaApiMap.containsKey(instance)){
+    if (StringUtils.isBlank(instance) || !cmcCaApiMap.containsKey(instance)) {
       log.debug("Received CMC is not supported for specified instance {}", contentType);
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -135,7 +144,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
       final CMCRequest cmcRequest = requestParser.parseCMCrequest(requestPayload.getBody());
       final CMCRequestType cmcRequestType = cmcRequest.getCmcRequestType();
       // Log request
-      switch (cmcRequestType){
+      switch (cmcRequestType) {
       case issueCert:
         auditLogIssueCertRequest(cmcRequest, instance);
         break;
@@ -149,7 +158,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
       final CMCResponse cmcResponse = cmcCaApi.processRequest(requestPayload.getBody());
 
       // Log result
-      switch (cmcRequestType){
+      switch (cmcRequestType) {
       case issueCert:
         auditLogIssueCert(cmcRequest, cmcResponse, instance);
         break;
@@ -165,7 +174,8 @@ public class CMCApiController implements ApplicationEventPublisherAware {
         .contentType(MediaType.parseMediaType(CMC_MIME_TYPE))
         .body(new InputStreamResource(new ByteArrayInputStream(cmcResponse.getCmcResponseBytes())));
 
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       log.debug("Unable to parse CMC request: {}", ex.getMessage());
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -176,10 +186,10 @@ public class CMCApiController implements ApplicationEventPublisherAware {
     CertificationRequest certificationRequest = cmcRequest.getCertificationRequest();
     CertificateRequestMessage certificateRequestMessage = cmcRequest.getCertificateRequestMessage();
     String subjectDn = certificationRequest != null
-    ? certificationRequest.getSubject().toString()
-    : certificateRequestMessage != null
-    ? certificateRequestMessage.getCertTemplate().getSubject().toString()
-    : "No request subject";
+      ? certificationRequest.getSubject().toString()
+      : certificateRequestMessage != null
+      ? certificateRequestMessage.getCertTemplate().getSubject().toString()
+      : "No request subject";
 
     // We have a request. Make an audit log event
     applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.certificateRequested,
@@ -187,7 +197,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
         instance,
         subjectDn),
       null, "CMC-Client"));
-    if (log.isTraceEnabled()){
+    if (log.isTraceEnabled()) {
       String certReqString = certificationRequest != null
         ? Base64.toBase64String(certificationRequest.getEncoded())
         : certificateRequestMessage != null
@@ -201,7 +211,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
     throws CertificateEncodingException, IOException {
 
     final List<X509Certificate> returnCertificates = cmcResponse.getReturnCertificates();
-    if (returnCertificates == null || returnCertificates.size() != 1){
+    if (returnCertificates == null || returnCertificates.size() != 1) {
       log.warn("CA failed to issue certificate");
       return;
     }
@@ -214,18 +224,19 @@ public class CMCApiController implements ApplicationEventPublisherAware {
         Base64.toBase64String(certificateHolder.getEncoded()),
         certificateHolder.getSerialNumber(),
         certificateHolder.getSubject().toString()
-      ),null, "CMC-Client"));
+      ), null, "CMC-Client"));
 
     log.info("Certificate issued to {}", certificateHolder.getSubject().toString());
-    if (log.isTraceEnabled()){
+    if (log.isTraceEnabled()) {
       log.trace("Issued Certificate: {}", Base64.toBase64String(certificateHolder.getEncoded()));
     }
   }
 
-  private void auditLogRevokeRequest(CMCRequest cmcRequest, String instance) throws IOException {
+  private void auditLogRevokeRequest(CMCRequest cmcRequest, String instance) throws CMCMessageException {
 
     PKIData pkiData = cmcRequest.getPkiData();
-    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest, pkiData);
+    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest,
+      pkiData);
     RevokeRequest revokeRequest = (RevokeRequest) cmcControlObject.getValue();
 
     //Audit log revocation request
@@ -238,14 +249,15 @@ public class CMCApiController implements ApplicationEventPublisherAware {
   }
 
   private void auditLogRevokeCert(CMCRequest cmcRequest, CMCResponse cmcResponse, String instance)
-    throws IOException, ParseException, CertificateException {
+    throws IOException, ParseException, CertificateException, CMCMessageException {
 
     PKIData pkiData = cmcRequest.getPkiData();
-    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest, pkiData);
+    CMCControlObject cmcControlObject = CMCUtils.getCMCControlObject(CMCObjectIdentifiers.id_cmc_revokeRequest,
+      pkiData);
     RevokeRequest revokeRequest = (RevokeRequest) cmcControlObject.getValue();
 
     final CMCStatusType status = cmcResponse.getResponseStatus().getStatus();
-    if (!status.equals(CMCStatusType.success)){
+    if (!status.equals(CMCStatusType.success)) {
       log.warn("Failed to process revocation request via CMC for serial number {}", revokeRequest.getSerialNumber());
       return;
     }
