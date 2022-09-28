@@ -36,7 +36,7 @@ import se.swedenconnect.ca.cmc.auth.impl.DefaultCMCValidator;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.engine.configuration.CAAlgorithmRegistry;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
-import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
 

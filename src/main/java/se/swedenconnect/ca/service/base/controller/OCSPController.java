@@ -19,7 +19,6 @@ package se.swedenconnect.ca.service.base.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ocsp.OCSPRequest;
-import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -29,13 +28,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
-import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Description

@@ -158,13 +158,16 @@ public class BeanConfig implements ApplicationEventPublisherAware {
   @Bean
   Map<String, EmbeddedLogo> logoMap(
     ResourceLoader resourceLoader,
-    @Value("${ca-service.config.logo}")String logoLocation,
-    @Value("${ca-service.config.icon}")String iconLocation
+    @Value("${ca-service.config.logo:#{null}}")String logoLocation,
+    @Value("${ca-service.config.icon:#{null}}")String iconLocation
   ) throws Exception {
     Map<String, EmbeddedLogo> logoMap = new HashMap<>();
-    logoMap.put("logo", new EmbeddedLogo(logoLocation, resourceLoader));
-    logoMap.put("icon", new EmbeddedLogo(iconLocation, resourceLoader));
+    if (StringUtils.isNotBlank(logoLocation)) {
+      logoMap.put("logo", new EmbeddedLogo(logoLocation, resourceLoader));
+    }
+    if (StringUtils.isNotBlank(iconLocation)) {
+      logoMap.put("icon", new EmbeddedLogo(iconLocation, resourceLoader));
+    }
     return logoMap;
   }
-
 }

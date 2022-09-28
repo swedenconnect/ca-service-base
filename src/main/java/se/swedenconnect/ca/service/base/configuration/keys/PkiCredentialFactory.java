@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.cryptacular.util.CertUtil;
 import org.springframework.core.io.FileSystemResource;
-import se.swedenconnect.ca.engine.configuration.ExternalChainCredential;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.security.credential.BasicCredential;
 import se.swedenconnect.security.credential.KeyStoreCredential;
@@ -65,7 +64,7 @@ public class PkiCredentialFactory {
 
 
 
-    public ExternalChainCredential getCredential(final CAConfigData.KeySourceType keySourceType, final File keySourceLocation, final String alias,
+    public PkiCredential getCredential(final CAConfigData.KeySourceType keySourceType, final File keySourceLocation, final String alias,
       final char[] password, File certificateFile) throws Exception {
 
         switch (keySourceType) {
@@ -78,7 +77,7 @@ public class PkiCredentialFactory {
               password, alias, password
             );
             keyStoreCredential.init();
-            return new ExternalChainCredential(keyStoreCredential);
+            return keyStoreCredential;
         case pkcs11:
             Objects.requireNonNull(pkcs11Provider, "PKCS11 provider must be set for PKCS 11 key sources");
             KeyStoreCredential p11Credential = new KeyStoreCredential(
@@ -86,7 +85,7 @@ public class PkiCredentialFactory {
               password, alias, null
             );
             p11Credential.init();
-            return new ExternalChainCredential(p11Credential);
+            return p11Credential;
         case pem:
             Objects.requireNonNull(keySourceLocation, "Key source location must not be null for pem key sources");
             Objects.requireNonNull(certificateFile, "Certificate file location must not be null for pem key sources");
@@ -96,11 +95,11 @@ public class PkiCredentialFactory {
               pemKey.privateKey
             );
             pemCredential.init();
-            return new ExternalChainCredential(pemCredential);
+            return pemCredential;
         case none:
             return null;
         case create:
-            return new ExternalChainCredential(createCredential());
+            return createCredential();
         }
         throw new IOException("Unable to create credential");
     }

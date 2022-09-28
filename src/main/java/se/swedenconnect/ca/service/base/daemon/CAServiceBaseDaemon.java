@@ -28,7 +28,7 @@ import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
 import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
-import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 
 import java.io.IOException;
 import java.math.BigInteger;

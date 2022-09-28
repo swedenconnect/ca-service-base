@@ -16,6 +16,7 @@
     <properties>
         <java.version>11</java.version>
         <ca.engine.version>1.2.2</ca.engine.version>
+        <credential.support.version>1.2.4</credential.support.version>
         <ca.cmc.version>1.3.1</ca.cmc.version>
     </properties>
     <dependencies>
@@ -68,53 +69,28 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-
         <!-- Sweden connect modules -->
         <dependency>
             <groupId>se.swedenconnect.ca</groupId>
             <artifactId>ca-engine</artifactId>
             <version>${ca.engine.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>se.swedenconnect.security</groupId>
+                    <artifactId>credentials-support</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>se.swedenconnect.security</groupId>
+            <artifactId>credentials-support</artifactId>
+            <version>${credential.support.version}</version>
         </dependency>
         <dependency>
             <groupId>se.swedenconnect.ca</groupId>
             <artifactId>cmc</artifactId>
             <version>${ca.cmc.version}</version>
         </dependency>
-<!--
-        <dependency>
-            <groupId>se.swedenconnect.opensaml</groupId>
-            <artifactId>opensaml-security-ext</artifactId>
-            <version>1.0.7</version>
-        </dependency>
--->
-
-        <!-- Web Jar dependencies -->
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>4.5.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>popper.js</artifactId>
-            <version>1.16.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>jquery</artifactId>
-            <version>3.6.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap-select</artifactId>
-            <version>1.13.18</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>font-awesome</artifactId>
-            <version>5.15.3</version>
-        </dependency>
-
     </dependencies>
 
     <build>
