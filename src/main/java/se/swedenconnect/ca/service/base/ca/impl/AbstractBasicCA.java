@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package se.swedenconnect.ca.service.base.configuration.instance.ca;
+package se.swedenconnect.ca.service.base.ca.impl;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +25,6 @@ import se.swedenconnect.ca.engine.ca.issuer.impl.AbstractCAService;
 import se.swedenconnect.ca.engine.ca.issuer.impl.BasicCertificateIssuer;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
-import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuer;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.crl.impl.DefaultCRLIssuer;
@@ -34,7 +33,6 @@ import se.swedenconnect.security.credential.PkiCredential;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 

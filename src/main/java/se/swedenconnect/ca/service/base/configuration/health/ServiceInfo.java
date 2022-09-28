@@ -30,7 +30,7 @@ import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.ca.ca.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;

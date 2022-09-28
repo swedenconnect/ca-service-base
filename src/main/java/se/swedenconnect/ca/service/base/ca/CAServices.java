@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package se.swedenconnect.ca.service.base.configuration.instance;
+package se.swedenconnect.ca.service.base.ca;
 
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 

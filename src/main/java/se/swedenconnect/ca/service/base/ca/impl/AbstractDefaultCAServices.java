@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package se.swedenconnect.ca.service.base.configuration.instance.impl;
+package se.swedenconnect.ca.service.base.ca.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -47,7 +47,6 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.ExplicitCertNameModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.configuration.ExternalChainCredential;
-import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
@@ -58,7 +57,6 @@ import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
 import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
@@ -151,7 +149,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       File repositoryDir = createOrLoadDir(instanceDir, "repository");
 
       log.debug("Creating the local key store for the CA of instance {}", instance);
-      ExternalChainCredential caKeySource = getKeySource(caKeyConf, keyDir, "ca",
+      PkiCredential caKeySource = getKeySource(caKeyConf, keyDir, "ca",
         keyDir, certsDir, repositoryDir);
       assert caKeySource != null;
 
@@ -227,7 +225,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
         // Set initial values for the OCSP certificate chain and algorithm
         List<X509CertificateHolder> ocspServiceChain = new ArrayList<>(caChain);
         String ocspAlgorithm = caConfig.getAlgorithm();
-        ExternalChainCredential ocspKeySource = getKeySource(ocspKeyConf, keyDir, "ocsp");
+        PkiCredential ocspKeySource = getKeySource(ocspKeyConf, keyDir, "ocsp");
         // Determine if the OCSP responder is a separate entity based on whether we found a separate OCSP responder key
         boolean separateOcspEntity = ocspKeySource != null;
 
@@ -357,7 +355,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
     }
     CertificateIssuerModel certificateIssuerModel = new CertificateIssuerModel(caConfig.getAlgorithm(), GeneralCAUtils.getDurationFromTypeAndValue(
       CAConfigData.ValidityUnit.Y, caConfig.getSelfIssuedValidYears()));
-    certificateIssuerModel.setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(validity.getUnit(), validity.getAmount()));
+    certificateIssuerModel.setExpiryOffset(Duration.ofDays(validityAmount));
     certificateIssuerModel.setStartOffset(Duration.ofSeconds(validity.getStartOffsetSec()));
 
     CertificateIssuer issuer = new BasicCertificateIssuer(certificateIssuerModel, caKeySource);
@@ -457,7 +455,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param cleanDirs        a list of directories that should be wiped of all content if this key is created from scratch to delete history of any old key
    * @return key source
    */
-  private ExternalChainCredential getKeySource(CAConfigData.KeySourceData keyConf, File keyDir, String entityIdentifier, File... cleanDirs)
+  private PkiCredential getKeySource(CAConfigData.KeySourceData keyConf, File keyDir, String entityIdentifier, File... cleanDirs)
     throws Exception {
     String keyLocation = null;
     String certLocation = null;
@@ -629,7 +627,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   private String locateFile(File keyFolder, String suffix, String confResource) {
     if (confResource != null) {
       if (confResource.startsWith("classpath:")){
-        return getClass().getResource("/" + confResource.substring(10)).getFile();
+        return this.getClass().getResource("/" + confResource.substring(10)).getFile();
       }
       if (confResource.startsWith("/")){
         return confResource;

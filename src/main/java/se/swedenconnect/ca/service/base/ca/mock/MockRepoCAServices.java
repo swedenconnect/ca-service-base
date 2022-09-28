@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package se.swedenconnect.ca.service.base.configuration.instance.mock;
+package se.swedenconnect.ca.service.base.ca.mock;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -27,15 +27,14 @@ import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
-import se.swedenconnect.ca.service.base.configuration.instance.impl.AbstractDefaultCAServices;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractDefaultCAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.security.credential.PkiCredential;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Map;
