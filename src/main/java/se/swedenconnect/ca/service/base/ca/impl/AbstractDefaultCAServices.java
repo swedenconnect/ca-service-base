@@ -290,8 +290,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
         // Now we have everything to create the OCSP service instance
         log.debug("Instantiating OCSP responder for instance {}", instance);
         OCSPModel ocspModel = getOCSPmodel(caService.getCaCertificate(), ocspAlgorithm, ocspConfig);
-        OCSPResponder ocspResponder = new RepositoryBasedOCSPResponder(ocspKeySource, ocspModel,
-          caRepository);
+        OCSPResponder ocspResponder = createOcspResponder(ocspKeySource, ocspModel, caRepository);
         // Add the OCSP responder to the CA service
         log.debug("Adding OCSP responder to instance {}", instance);
         caService.setOcspResponder(ocspResponder);
@@ -313,6 +312,20 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       throw new RuntimeException(ex);
     }
 
+  }
+
+  /**
+   * Overridable method that creates the OCSPResponder for the CA
+   *
+   * @param ocspKeySource the credential for the OCSP responder
+   * @param ocspModel model for creating OCSP responses
+   * @param caRepository ca repository
+   * @return {@link OCSPResponder}
+   * @throws NoSuchAlgorithmException the specified algorithm is not supported
+   */
+  protected OCSPResponder createOcspResponder(PkiCredential ocspKeySource, OCSPModel ocspModel, CARepository caRepository)
+    throws NoSuchAlgorithmException {
+    return new RepositoryBasedOCSPResponder(ocspKeySource, ocspModel, caRepository);
   }
 
   /**
