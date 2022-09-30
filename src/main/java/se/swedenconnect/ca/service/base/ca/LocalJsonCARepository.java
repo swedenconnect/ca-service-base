@@ -43,9 +43,6 @@ import java.util.stream.Collectors;
 
 /**
  * Test implementation of a CA repository
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public class LocalJsonCARepository implements CARepository, CRLRevocationDataProvider {
@@ -57,6 +54,13 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   private BigInteger crlNumber;
   private boolean criticalError = false;
 
+  /**
+   * Constructor for a local file-based CA repository
+   *
+   * @param crlFile the file used to store the latest CRL
+   * @param certificateRecordsFile the file used to store issued certificates
+   * @throws IOException general data parsing errors
+   */
   public LocalJsonCARepository(File crlFile, File certificateRecordsFile) throws IOException {
     this.crlFile = crlFile;
     this.certificateRecordsFile = certificateRecordsFile;
@@ -391,9 +395,16 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
     return false;
   }
 
+  /**
+   * Enumerations of basic types of repository updates
+   */
   public enum UpdateType {
-    //TODO Fill in rest
-    addCert, revokeCert, removeExpiredCerts
+    /** Add a certificate to the repository */
+    addCert,
+    /** Revoke or un-revoke certificate */
+    revokeCert,
+    /** Remove expired certificates */
+    removeExpiredCerts
   }
 
 }

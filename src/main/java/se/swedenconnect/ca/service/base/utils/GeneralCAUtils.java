@@ -32,12 +32,18 @@ import java.util.*;
 
 /**
  * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class GeneralCAUtils {
 
+  /**
+   * Get the OCSP certificate of a CA instance
+   *
+   * @param configFolder the location of configuration data of the CA services application
+   * @param instance the name of the CA instance
+   * @return the OCSP responder certificate (or null if not present) for this CA instance
+   * @throws IOException error parsing data
+   * @throws CertificateEncodingException error encoding certificates
+   */
   public static X509CertificateHolder getOcspCert(File configFolder, String instance) throws IOException, CertificateEncodingException {
     File certDir = new File(configFolder , "instances/"+ instance+"/certs");
     if (certDir.exists()){
@@ -53,6 +59,12 @@ public class GeneralCAUtils {
     return null;
   }
 
+  /**
+   * Checks if a certificate is an OCSP responder certificate
+   *
+   * @param cert certificate to check
+   * @return true if the input data is match the requirements of an OCSP responder certificate
+   */
   public static boolean isOCSPCert(X509CertificateHolder cert) {
     try {
       return ExtendedKeyUsage.fromExtensions(cert.getExtensions()).hasKeyPurposeId(KeyPurposeId.id_kp_OCSPSigning);
@@ -95,6 +107,13 @@ public class GeneralCAUtils {
     return new File(filename);
   }
 
+  /**
+   * Get duration from validity unit and amount.
+   *
+   * @param unit the time unit used to express amount
+   * @param amount amount of time units
+   * @return The duration value corresponding to the input values
+   */
   public static Duration getDurationFromTypeAndValue(CAConfigData.ValidityUnit unit, Integer amount) {
     switch (unit) {
     case M:

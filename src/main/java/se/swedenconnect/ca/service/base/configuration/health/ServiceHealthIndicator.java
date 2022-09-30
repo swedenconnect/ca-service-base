@@ -24,9 +24,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Service health indicator bean.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 @Slf4j
@@ -34,6 +31,11 @@ public class ServiceHealthIndicator implements HealthIndicator {
 
     private final ServiceInfo serviceInfo;
 
+    /**
+     * Constructor for the service health indicator
+     *
+     * @param serviceInfo information about the service being monitored for health issues
+     */
     @Autowired
     public ServiceHealthIndicator(ServiceInfo serviceInfo) {
         this.serviceInfo = serviceInfo;

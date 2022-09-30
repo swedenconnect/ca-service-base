@@ -37,12 +37,21 @@ import java.util.List;
 
 /**
  * This is a Mock test implementation of a Basic CA used in the MocRepoCAServices
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class MockCA extends AbstractBasicCA {
 
+  /**
+   * Constructor for Mock CA
+   *
+   * @param issuerCredential issuer credentials
+   * @param caRepository CA repository
+   * @param certIssuerModel certificate issuer model
+   * @param crlIssuerModel CRL issuer model
+   * @param crlDistributionPoints CRL distribution points
+   * @throws NoSuchAlgorithmException algorithm is not supported
+   * @throws IOException generic data parsing errors
+   * @throws CertificateEncodingException certificate encoding errors
+   */
   public MockCA(PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel,
     CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
@@ -50,7 +59,9 @@ public class MockCA extends AbstractBasicCA {
     super(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
-  @Override protected DefaultCertificateModelBuilder getBaseCertificateModelBuilder(CertNameModel subject, PublicKey publicKey,
+  /** {@inheritDoc} */
+  @Override
+  protected DefaultCertificateModelBuilder getBaseCertificateModelBuilder(CertNameModel subject, PublicKey publicKey,
     X509CertificateHolder issuerCertificate, CertificateIssuerModel certificateIssuerModel) throws CertificateIssuanceException {
     DefaultCertificateModelBuilder certModelBuilder = DefaultCertificateModelBuilder.getInstance(publicKey, getCaCertificate(),
       certificateIssuerModel);

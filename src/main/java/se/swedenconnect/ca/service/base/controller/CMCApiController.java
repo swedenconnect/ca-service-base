@@ -74,10 +74,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CMC API Controller
  */
 @Slf4j
 @RestController
@@ -99,6 +96,14 @@ public class CMCApiController implements ApplicationEventPublisherAware {
     HEADER_MAP.add("Expires", "0");
   }
 
+  /**
+   * Bean constructor
+   *
+   * @param cmcCaApiMap CMC API map
+   * @param cmcPortConstraints CMC port constraints handler
+   * @param cmcRequestParserMap map of CMC request parsers
+   * @param caServices CA services
+   */
   @Autowired
   public CMCApiController(Map<String, CMCCaApi> cmcCaApiMap, CMCPortConstraints cmcPortConstraints,
     Map<String, AuditCMCRequestParser> cmcRequestParserMap, CAServices caServices) {
@@ -114,6 +119,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
    * @param instance the CA service instance used to generate the CMC response
    * @param requestPayload the bytes received with the POST as the payload bytes
    * @param contentType HTTP Content-Type header
+   * @param request HTTP servlet request
    * @return CMC response
    */
   @PostMapping(value = "/cmc/{instance}")
@@ -289,6 +295,7 @@ public class CMCApiController implements ApplicationEventPublisherAware {
         .build(), null, "CMC-Client"));
   }
 
+  /** {@inheritDoc} */
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }

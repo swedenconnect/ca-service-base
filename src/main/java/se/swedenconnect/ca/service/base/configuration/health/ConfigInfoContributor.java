@@ -22,9 +22,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Info contributor for the Health Service.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 public class ConfigInfoContributor implements InfoContributor {
@@ -32,6 +29,11 @@ public class ConfigInfoContributor implements InfoContributor {
 
     private ServiceInfo serviceInfo;
 
+    /**
+     * Constructor
+     *
+     * @param serviceInfo service information
+     */
     @Autowired
     public ConfigInfoContributor(ServiceInfo serviceInfo) {
         this.serviceInfo = serviceInfo;
@@ -39,6 +41,8 @@ public class ConfigInfoContributor implements InfoContributor {
 
     /**
      * Adds the policy configuration to the information released by the Spring Boot actuator info-endpoint.
+     *
+     * @param builder service information builder
      */
     @Override
     public void contribute(Builder builder) {

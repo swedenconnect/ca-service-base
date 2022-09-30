@@ -40,9 +40,6 @@ import java.util.List;
  * ca-service.config.remove-expired-certs=false;
  * ca-service.config.remove-expired-grace-seconds=86400;
  * ca-service.config.daemon-timer-seconds=300;
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 @Slf4j
@@ -53,6 +50,13 @@ public class CAServiceBaseDaemon implements ApplicationEventPublisherAware, Init
   private final int gracePeriodSeconds;
   private final CAServices caServices;
 
+  /**
+   * CA service scheduled task service constructor
+   * @param caServices CA services
+   * @param deleteExpired indicator if the service deletes expired certificates
+   * @param gracePeriodSeconds the number of seconds after expiry before a certificate is actively removed
+   * @param daemonTimerSeconds the number of seconds between scheduled tasks
+   */
   @Autowired
   public CAServiceBaseDaemon(CAServices caServices,
     @Value("${ca-service.config.remove-expired-certs}") boolean deleteExpired,
@@ -70,6 +74,10 @@ public class CAServiceBaseDaemon implements ApplicationEventPublisherAware, Init
     }
   }
 
+  /**
+   * Scheduled event to delete expired certificates from the CA repository
+   * @throws IOException error processing the certificate removal
+   */
   @Scheduled(initialDelayString = "${ca-service.config.daemon-timer-seconds}" + "000",
     fixedDelayString = "${ca-service.config.daemon-timer-seconds}" + "000")
   public synchronized void deleteExpiredCertificates() throws IOException {
@@ -100,15 +108,13 @@ public class CAServiceBaseDaemon implements ApplicationEventPublisherAware, Init
     }
   }
 
-  /**
-   * Initial processing
-   * @throws Exception on errors during initial setup
-   */
+  /** {@inheritDoc} */
   @Override public void afterPropertiesSet() throws Exception {
     log.info("Running initial daemon pass to remove expired certificates");
     deleteExpiredCertificates();
   }
 
+  /** {@inheritDoc} */
     @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }

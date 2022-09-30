@@ -48,9 +48,6 @@ import java.util.stream.Collectors;
 
 /**
  * Configuration class to provide constructed beans
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Configuration
 @Slf4j

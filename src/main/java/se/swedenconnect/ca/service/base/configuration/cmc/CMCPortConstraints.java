@@ -28,13 +28,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * This component enforce configured port restrictions on the admin UI to ensure that the UI is only available in accordance with set
+ * This component enforces configured port restrictions on the admin UI to ensure that the UI is only available in accordance with set
  * policy.
  *
  * This class typically enforces service port only, but may also implement other controls such as IP address whitelisting etc.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 @Slf4j
@@ -42,6 +39,11 @@ public class CMCPortConstraints {
 
   private final CMCConfigProperties cmcConfigProperties;
 
+  /**
+   * Constructor for CMC constraints
+   *
+   * @param cmcConfigProperties configuration properties for CMC support
+   */
   @Autowired
   public CMCPortConstraints(CMCConfigProperties cmcConfigProperties) {
     this.cmcConfigProperties = cmcConfigProperties;
@@ -54,6 +56,12 @@ public class CMCPortConstraints {
     }
   }
 
+  /**
+   * Validates that the port of a CMC request is valid and authorized.
+   *
+   * @param request servlet request containing a CMC request
+   * @throws IOException if the request is not supported and authorized
+   */
   public void validateRequestPort(HttpServletRequest request) throws IOException {
     final List<Integer> cmcPorts = cmcConfigProperties.getPort();
     if (cmcPorts == null) {

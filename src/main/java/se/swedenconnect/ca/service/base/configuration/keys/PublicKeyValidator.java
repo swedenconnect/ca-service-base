@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 
 /**
- * Description
+ * Interface for validating a public key
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -30,6 +30,7 @@ public interface PublicKeyValidator {
   /**
    * Evaluate a public key to determine that it meets the defined security policy
    * @param publicKey public key to validate
+   * @throws PublicKeyPolicyException if the public key is not valid
    */
   void validatePublicKey(PublicKey publicKey) throws PublicKeyPolicyException;
 

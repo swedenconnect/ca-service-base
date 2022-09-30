@@ -40,6 +40,11 @@ public class TomcatSettings {
     @Value("${ca-service.config.control-port:-1}") int serverControlPort;
     @Value("${tomcat.ajp.secret:#{null}}") String ajpSecret;
 
+    /**
+     * Tomcat settings bean constructor setting support for AJP port as well as additional admin service port.
+     *
+     * @return {@link TomcatServletWebServerFactory} for the Spring Boot embedded tomcat
+     */
     @Bean
     public ConfigurableServletWebServerFactory servletContainer() {
 
@@ -53,7 +58,7 @@ public class TomcatSettings {
             connector.setSecure(false);
             connector.setAllowTrace(false);
             connector.setScheme("http");
-            final AbstractAjpProtocol protocol = (AbstractAjpProtocol) connector.getProtocolHandler();
+            final AbstractAjpProtocol<?> protocol = (AbstractAjpProtocol<?>) connector.getProtocolHandler();
             if (StringUtils.isBlank(ajpSecret)){
                 log.info("Setting up tomcat AJP without secret");
                 connector.setSecure(false);

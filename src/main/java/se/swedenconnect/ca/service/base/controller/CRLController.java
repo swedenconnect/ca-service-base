@@ -56,11 +56,21 @@ public class CRLController implements ApplicationEventPublisherAware {
   @Value("${ca-service.config.crl-refresh-margin-seconds:60}")  int crlRefreshMarginSeconds;
   private final CAServices caServices;
 
+  /**
+   * Bean constructor
+   *
+   * @param caServices CA services
+   */
   @Autowired
   public CRLController(CAServices caServices) {
     this.caServices = caServices;
   }
 
+  /**
+   * Handle requests for the latest CRL
+   * @param crlFileName the name of the requested CRL used as CRL file name
+   * @return certificate revocation list
+   */
   @RequestMapping(value = "/crl/{crlFileName}")
   public ResponseEntity<InputStreamResource> getCRL(@PathVariable("crlFileName") String crlFileName) {
     if (StringUtils.isBlank(crlFileName) || !crlFileName.endsWith(".crl") || crlFileName.length() < 5) {
@@ -132,6 +142,7 @@ public class CRLController implements ApplicationEventPublisherAware {
     }
   }
 
+  /** {@inheritDoc} */
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }

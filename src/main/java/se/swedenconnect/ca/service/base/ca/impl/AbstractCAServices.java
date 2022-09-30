@@ -24,18 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The first level of abstract implementation of the CAServices interface
+ * The first level of abstract implementation of the CAServices interface.
  *
  * The CAServices interface is designed to hold a whole set of individual CA instances
- * based on property settings
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * based on property settings.
  */
 public abstract class AbstractCAServices implements CAServices {
 
+  /** Configuration data used to set up one or more CA service instances */
   protected final InstanceConfiguration instanceConfiguration;
 
+  /**
+   * Constructor for CA service instances
+   *
+   * @param instanceConfiguration configuration data
+   */
   public AbstractCAServices(InstanceConfiguration instanceConfiguration){
     this.instanceConfiguration = instanceConfiguration;
   }

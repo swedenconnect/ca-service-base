@@ -40,15 +40,30 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
+/**
+ * Implements a factory for creating credentials based on configuration data
+ *
+ * @author Martin Lindström (martin@idsec.se)
+ * @author Stefan Santesson (stefan@idsec.se)
+ */
 @Slf4j
 public class PkiCredentialFactory {
 
+    /** Country code for self issued certificates used in mock key generation. */
     @Setter private String mockKeyCountryCode;
+    /** Organization name for self issued certificates used in mock key generation */
     @Setter private String mockKeyOrgName;
+    /** Key length used in generated mock RSA keys */
     @Setter private int mockKeyLen = 2048;
 
+    /** PKCS11 crypto provider for a present HSM slot, if available. */
     private final Provider pkcs11Provider;
 
+    /**
+     * Constructor for the PKI credential factory
+     *
+     * @param pkcs11ConfigFilePath file path to optional PKCS#11 configuration data
+     */
     public PkiCredentialFactory(String pkcs11ConfigFilePath) {
         this.mockKeyCountryCode = "XX";
         this.mockKeyOrgName = "Test Org";
@@ -62,8 +77,17 @@ public class PkiCredentialFactory {
         this.pkcs11Provider = createdPkcs11Provider;
     }
 
-
-
+    /**
+     * Get the credential associated with provided credential configuration data.
+     *
+     * @param keySourceType the type of key source (jks, pkcs12, pkcs11, pem, create or none)
+     * @param keySourceLocation the location of the key pair data
+     * @param alias alias used to access the credential key pair
+     * @param password password protecting the private key source
+     * @param certificateFile external certificate file if present
+     * @return {@link PkiCredential}
+     * @throws Exception errors obtaining PKI credential from configuration data
+     */
     public PkiCredential getCredential(final CAConfigData.KeySourceType keySourceType, final File keySourceLocation, final String alias,
       final char[] password, File certificateFile) throws Exception {
 

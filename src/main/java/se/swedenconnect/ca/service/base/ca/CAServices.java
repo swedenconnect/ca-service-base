@@ -22,9 +22,6 @@ import java.util.List;
 
 /**
  * Interface for implementing a bean that constructs and provides CA services based on current configuration data
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public interface CAServices {
 

@@ -19,6 +19,7 @@ package se.swedenconnect.ca.service.base.configuration.cmc;
 import se.swedenconnect.ca.cmc.api.CMCCaApi;
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
 import se.swedenconnect.ca.cmc.api.CMCResponseFactory;
+import se.swedenconnect.ca.cmc.api.impl.DefaultCMCCaApi;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 
 /**
@@ -27,15 +28,22 @@ import se.swedenconnect.ca.engine.ca.issuer.CAService;
  * This interface creates a suitable provider for a specified CA instances.
  *
  * The difference between different CMC CA API implementations lies mainly in how certificate request data is used to determine
- * certificate content. The default implementation {@link se.swedenconnect.ca.cmc.api.impl.DefaultCMCCaApi} simply trust the
+ * certificate content. The default implementation {@link DefaultCMCCaApi} simply trust the
  * certificate request data to be complete and faithfully issue a certificate exactly as requested.
  *
  * If some other procedure is used to validate och modify certificate request data, then this provider implementation must return
  * a CMC CA API implementation that enforces those rules.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public interface CMCApiProvider {
+
+  /**
+   * Provide a suitable CMCCaApi implementation
+   *
+   * @param instance instance name of the CA
+   * @param caService the CA service
+   * @param requestParser parser of CMC requests
+   * @param responseFactory CMC response factory
+   * @return {@link CMCCaApi}
+   */
   CMCCaApi getCmcCaApi(String instance, CAService caService, CMCRequestParser requestParser, CMCResponseFactory responseFactory);
 }

@@ -22,19 +22,30 @@ import org.springframework.context.ApplicationEventPublisher;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+/**
+ * Context listener for CA service
+ */
 public class CAServiceContextListener implements ServletContextListener {
 
+    /** Application event publisher */
     private ApplicationEventPublisher applicationEventPublisher;
 
+    /**
+     * Constructor creating a context listener with an application event publisher
+     *
+     * @param applicationEventPublisher application event publisher
+     */
     public CAServiceContextListener(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         applicationEventPublisher.publishEvent(new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.startup.getEventName()));
     }
 
+    /** {@inheritDoc} */
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         applicationEventPublisher.publishEvent(new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.shutdown.getEventName()));

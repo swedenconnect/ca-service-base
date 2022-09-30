@@ -14,6 +14,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Embedded logo object used to provide a local image file as data URL.
+ */
 @Getter
 public class EmbeddedLogo {
 

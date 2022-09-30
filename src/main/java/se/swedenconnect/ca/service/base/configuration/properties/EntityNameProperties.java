@@ -22,7 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Description
+ * Configuration properties for default name of configured CA services
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -32,11 +32,18 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @ToString
 public class EntityNameProperties {
-  String country;
-  String org;
-  String orgUnit;
-  String orgIdentifier;
-  String serialNumber;
-  String commonName;
+
+  /** Country name 2-letter ISO 3166 country code. */
+  private String country;
+  /** Organization name. */
+  private String org;
+  /** Organization unit name */
+  private String orgUnit;
+  /** Organization identifier */
+  private String orgIdentifier;
+  /** Serial number attribute value carrying the organization identifier */
+  private String serialNumber;
+  /** Common name of the CA */
+  private String commonName;
 }
 

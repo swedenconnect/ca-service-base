@@ -25,10 +25,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Data at CA service audit events
  */
 @Data
 @NoArgsConstructor
@@ -36,14 +33,22 @@ import java.util.Date;
 @Builder
 public class CAAuditEventData {
 
-  String caInstance;
-  String issuedCertificate;
-  BigInteger certSerialNumber;
-  String subject;
-  Date revocationTime;
-  Integer reason;
-  BigInteger crlNumber;
-  Exception exception;
+  /** CA instance */
+  private String caInstance;
+  /** The certificate being issued */
+  private String issuedCertificate;
+  /** Certificate serial number */
+  private BigInteger certSerialNumber;
+  /** Certificate subject */
+  private String subject;
+  /** Revocation time */
+  private Date revocationTime;
+  /** Revocation reason */
+  private Integer reason;
+  /** CRL number */
+  private BigInteger crlNumber;
+  /** Exception recorded at event */
+  private Exception exception;
 
   /**
    * Event data for certificate request
@@ -75,6 +80,7 @@ public class CAAuditEventData {
    * @param certSerialNumber certificate serial number
    * @param revocationTime revocation time
    * @param reason revocation reason
+   * @param subject The subject of the certificate
    */
   public CAAuditEventData(String caInstance, BigInteger certSerialNumber, Date revocationTime, Integer reason, String subject) {
     this.caInstance = caInstance;
@@ -86,8 +92,8 @@ public class CAAuditEventData {
 
   /**
    * Event data for new CRL publication
-   * @param caInstance
-   * @param crlNumber
+   * @param caInstance CA instance identifier
+   * @param crlNumber CRL number
    */
   public CAAuditEventData(String caInstance, BigInteger crlNumber) {
     this.caInstance = caInstance;

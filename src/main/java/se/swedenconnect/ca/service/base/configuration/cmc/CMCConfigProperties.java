@@ -25,10 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Configuration properties for the CA CMC service
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.cmc")
@@ -36,29 +33,45 @@ import java.util.Map;
 @ToString
 public class CMCConfigProperties {
 
+  /** CMC enabled for CA */
   private boolean enabled;
+  /** HTTP ports allowed for CMC traffic */
   private List<Integer> port;
+  /** CMC configuration data per CA instance */
   private Map<String, CMCConfigData> instance;
+  /** Authorizations for CMC clients */
   private List<ClientAuthorization> client;
 
+  /**
+   * Configuration data for CMC API service
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   @Builder
   public static class CMCConfigData {
 
+    /** Location of CMC signer key store */
     private String location;
+    /** Password for CMC signer key store */
     private String password;
+    /** CMC signer key alias */
     private String alias;
+    /** Algorithm used to sign CMC responses */
     private String algorithm;
   }
 
+  /**
+   * CMC Client authorization properties
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   @Builder
   public static class ClientAuthorization {
+    /** Location of the trusted CMC client certificate */
     private String certLocation;
+    /** The privileges of the CMC client */
     private Map<String, List<AuthorizedCmcOperation>> authorization;
   }
 

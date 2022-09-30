@@ -19,13 +19,15 @@ package se.swedenconnect.ca.service.base.configuration.cmc;
 import se.swedenconnect.ca.cmc.auth.CMCReplayChecker;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Provider for CMC replay checkers
  */
 public interface CMCReplayCheckerProvider {
 
+  /**
+   * Get the assigned CMC replay checker for a CA instance
+   * @param instance CA instance
+   * @return CMC replay checker
+   */
   CMCReplayChecker getCMCReplayChecker(String instance);
 
 }

@@ -35,7 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**
- * Description
+ * Spring Boot controller for providing the functionality of an OCSP responder
  *
  * @author Martin Lindström (martin@idsec.se)
  * @author Stefan Santesson (stefan@idsec.se)
@@ -55,6 +55,11 @@ public class OCSPController {
     headerMap.add("Expires", "0");
   }
 
+  /**
+   * Constructor for the OCSP controller
+   *
+   * @param caServices CA services providing OCSP responders
+   */
   @Autowired
   public OCSPController(CAServices caServices) {
     this.caServices = caServices;
@@ -62,9 +67,11 @@ public class OCSPController {
 
   /**
    * Processing a POST request for an OCSP response for a given CA service instance
+   *
    * @param instance the CA service instance used to generate the OCSP response
    * @param requestPayload the bytes received with the POST as the payload bytes
    * @param contentType HTTP Content-Type header
+   * @param request HTTP servlet request
    * @return OCSP response
    */
   @PostMapping(value = "/ocsp/{instance}")

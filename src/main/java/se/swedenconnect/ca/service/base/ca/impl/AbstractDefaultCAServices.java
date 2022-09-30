@@ -87,9 +87,6 @@ import java.util.stream.Collectors;
  * <p>The "keys" folder contains the key or key store files used by this instance</p>
  * <p>The "certs" can hold 2 files "ca-cert-chain.pem" and "self-issued.crt"</p>
  * <p>The "repository folder holds any files related to the implementation of the CA repository</p>
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public abstract class AbstractDefaultCAServices extends AbstractCAServices {
@@ -241,7 +238,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
             // No OCSP certificate file was found. Generate a new OCSP certificate and save it
 
             ocspIssuerCert = generateOcspCertificate(caKeySource, caCert, ocspKeySource.getCertificate().getPublicKey(),
-              caConfigData, instance, basicServiceConfig.getServiceUrl());
+              caConfigData, instance);
 
             //Create OCSP certificate issuance audit log event
             applicationEventPublisher.publishEvent(AuditEventFactory.getAuditEvent(AuditEventEnum.ocspCertificateIssued,
@@ -331,6 +328,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   /**
    * Creates an instance of a Basic CA Service
    * @param instance the instance of the CA being created
+   * @param type the type of CA being created
    * @param issuerCredential private key and certificate chain credential of the issuing CA
    * @param caRepository CA Repository
    * @param certIssuerModel Certificate issuance model
@@ -338,6 +336,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param crlDistributionPoints CRL Distribution point URL list
    * @return Basic CA Service instance
    * @throws NoSuchAlgorithmException if the algorithm is not supported
+   * @throws IOException input output data error
+   * @throws CertificateEncodingException error encoding certificates
    */
   protected abstract AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
@@ -346,12 +346,34 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   /**
    * Allows the implementation of this abstract class to modify the content of the OCSP certificate
    *
-   * @param certModelBuilder
+   * @param certModelBuilder the certificate modes builder used to create the certificate model
+   * @param instance the instance of the CA the OCSP responder is associated with
    */
   protected abstract void customizeOcspCertificateModel(DefaultCertificateModelBuilder certModelBuilder, String instance);
 
+  /**
+   * Function used to create a certificate for the OCSP responder. The OCSP certificate is produced outside
+   * of the regular audited certificate issuing process of certificates stored in the CA repository. This
+   * because the OCSP responder certificate is not a certificate issued to a "customer" of the CA using the
+   * certificate policy that governs the CA, but rather an internal service certificate for the service key
+   * used to sign OCSP responses, and for which no revocation data is provided.
+   *
+   * <p>
+   *   For this reson the OCSP certificate is issued by the CA:s certificate issuer function directly without
+   *   involvement of the CA repository.
+   * </p>
+   *
+   * @param caKeySource the issuer keys used by the CA to issue the OCSP certificate
+   * @param issuerCert the issuing certificate of the CA
+   * @param ocspPublicKey the public key of the OCSP responder
+   * @param caConfigData configuration data of the CA service
+   * @param instance the CA instance of the OCSP responder
+   * @return OCSP responder certificate
+   * @throws NoSuchAlgorithmException algorithm is not supported
+   * @throws IOException error processing data
+   */
   protected X509CertificateHolder generateOcspCertificate(PkiCredential caKeySource, X509CertificateHolder issuerCert,
-    PublicKey ocspPublicKey, CAConfigData caConfigData, String instance, String baseUrl)
+    PublicKey ocspPublicKey, CAConfigData caConfigData, String instance)
     throws NoSuchAlgorithmException, IOException {
     CAConfigData.CaConfig caConfig = caConfigData.getCa();
     if (caConfig.getSelfIssuedValidYears() == null) {

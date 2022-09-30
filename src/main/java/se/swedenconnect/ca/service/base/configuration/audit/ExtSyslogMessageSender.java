@@ -54,66 +54,71 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
   private Severity loglevel;
   private final Facility facility;
 
-  public ExtSyslogMessageSender(SyslogConfigProperties.SyslogConfigData scd) {
-    this.syslogConfigData = scd;
+  /**
+   * Constructor for syslog message sender setting up the connection to the syslog server
+   *
+   * @param syslogConfigData syslog configuration data
+   */
+  public ExtSyslogMessageSender(SyslogConfigProperties.SyslogConfigData syslogConfigData) {
+    this.syslogConfigData = syslogConfigData;
     this.objectMapper.registerModule(new JavaTimeModule());
 
     clientHostName = System.getenv(HOSTNAME_ENV_LABEL);
-    if (StringUtils.hasText(scd.getClienthostname())) {
-      clientHostName = scd.getClienthostname();
+    if (StringUtils.hasText(syslogConfigData.getClienthostname())) {
+      clientHostName = syslogConfigData.getClienthostname();
     }
 
     try {
-      loglevel = Severity.fromLabel(syslogConfigData.getLoglevel().toUpperCase());
+      loglevel = Severity.fromLabel(this.syslogConfigData.getLoglevel().toUpperCase());
     }
     catch (Exception ex) {
       try {
-        loglevel = Severity.fromNumericalCode(Integer.parseInt(syslogConfigData.getLoglevel()));
+        loglevel = Severity.fromNumericalCode(Integer.parseInt(this.syslogConfigData.getLoglevel()));
       }
       catch (Exception ex2) {
         loglevel = Severity.fromNumericalCode(6);
       }
     }
 
-    facility = Facility.fromNumericalCode(syslogConfigData.getFacility());
+    facility = Facility.fromNumericalCode(this.syslogConfigData.getFacility());
     checkSyslogConfig();
 
     MessageFormat messageFormat = MessageFormat.RFC_3164;
-    switch (scd.getProtocol().toLowerCase()) {
+    switch (syslogConfigData.getProtocol().toLowerCase()) {
     case "tcp":
     case "ssl":
-      if (!scd.isBsd()) {
+      if (!syslogConfigData.isBsd()) {
         messageFormat = MessageFormat.RFC_5425;
       }
       TcpSyslogMessageSender tcpMessageSender = new TcpSyslogMessageSender();
-      tcpMessageSender.setDefaultMessageHostname(scd.getClienthostname());
-      tcpMessageSender.setDefaultAppName(scd.getClientapp());
+      tcpMessageSender.setDefaultMessageHostname(syslogConfigData.getClienthostname());
+      tcpMessageSender.setDefaultAppName(syslogConfigData.getClientapp());
       tcpMessageSender.setDefaultFacility(facility);
-      tcpMessageSender.setDefaultSeverity(Severity.fromNumericalCode(scd.getSeverity() != null ? scd.getSeverity() : DEFAULT_SEVERITY));
-      tcpMessageSender.setSyslogServerHostname(scd.getHost());
-      tcpMessageSender.setSyslogServerPort(scd.getPort());
+      tcpMessageSender.setDefaultSeverity(Severity.fromNumericalCode(syslogConfigData.getSeverity() != null ? syslogConfigData.getSeverity() : DEFAULT_SEVERITY));
+      tcpMessageSender.setSyslogServerHostname(syslogConfigData.getHost());
+      tcpMessageSender.setSyslogServerPort(syslogConfigData.getPort());
       tcpMessageSender.setMessageFormat(messageFormat);
 
-      if (scd.getProtocol().equalsIgnoreCase("ssl")) {
+      if (syslogConfigData.getProtocol().equalsIgnoreCase("ssl")) {
         tcpMessageSender.setSsl(true);
       }
-      log.info("Configured TCP syslog export for audit logs on host {} port:{} ssl={}", scd.getHost(), scd.getPort(),
-        scd.getProtocol().equalsIgnoreCase("ssl"));
+      log.info("Configured TCP syslog export for audit logs on host {} port:{} ssl={}", syslogConfigData.getHost(), syslogConfigData.getPort(),
+        syslogConfigData.getProtocol().equalsIgnoreCase("ssl"));
       messageSender = tcpMessageSender;
       break;
     default:
-      if (!scd.isBsd()) {
+      if (!syslogConfigData.isBsd()) {
         messageFormat = MessageFormat.RFC_5424;
       }
       UdpSyslogMessageSender udpMessageSender = new UdpSyslogMessageSender();
-      udpMessageSender.setDefaultMessageHostname(scd.getClienthostname());
-      udpMessageSender.setDefaultAppName(scd.getClientapp());
+      udpMessageSender.setDefaultMessageHostname(syslogConfigData.getClienthostname());
+      udpMessageSender.setDefaultAppName(syslogConfigData.getClientapp());
       udpMessageSender.setDefaultFacility(facility);
       udpMessageSender.setDefaultSeverity(Severity.fromNumericalCode(DEFAULT_SEVERITY));
-      udpMessageSender.setSyslogServerHostname(scd.getHost());
-      udpMessageSender.setSyslogServerPort(scd.getPort());
+      udpMessageSender.setSyslogServerHostname(syslogConfigData.getHost());
+      udpMessageSender.setSyslogServerPort(syslogConfigData.getPort());
       udpMessageSender.setMessageFormat(messageFormat);
-      log.info("Configured UDP syslog export for audit logs on host {} port:{}", scd.getHost(), scd.getPort());
+      log.info("Configured UDP syslog export for audit logs on host {} port:{}", syslogConfigData.getHost(), syslogConfigData.getPort());
       messageSender = udpMessageSender;
     }
   }
@@ -205,21 +210,25 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMessage(CharArrayWriter charArrayWriter) throws IOException {
     messageSender.sendMessage(charArrayWriter);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMessage(CharSequence charSequence) throws IOException {
     messageSender.sendMessage(charSequence);
   }
 
+  /** {@inheritDoc} */
   @Override
   public void sendMessage(SyslogMessage syslogMessage) throws IOException {
     messageSender.sendMessage(syslogMessage);
   }
 
+  /** {@inheritDoc} */
   @Override public void close() throws IOException {
     messageSender.close();
   }

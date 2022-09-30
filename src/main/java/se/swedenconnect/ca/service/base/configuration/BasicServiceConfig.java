@@ -24,9 +24,6 @@ import java.io.File;
 
 /**
  * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Data
 @NoArgsConstructor

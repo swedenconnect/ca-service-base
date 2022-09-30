@@ -19,17 +19,17 @@ public interface CertificateDuplicateChecker {
    * similar parameters that will change when the certificate is re-issued under a new issuer in the cross-certification process.
    *
    * @param certificate the certificate
-   * @return
+   * @return certificate identifier that is unique among different certificates, but identical for certificates
+   * issued to the same subject using the same public key
    */
   String getCertId(X509Certificate certificate);
 
   /**
    * This reduces a list of certificates and removes equivalent (re-issued) certificates issued to the same entity
    *
-   *
-   * @param trustedCertList
-   * @return
+   * @param certificateList list of certificates to filter
+   * @return list of the latest unique certificates issued found in the provided list of certificates
    */
-  List<X509Certificate> removeEquivalentCerts(List<X509Certificate> trustedCertList);
+  List<X509Certificate> removeEquivalentCerts(List<X509Certificate> certificateList);
 
 }

@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is an implementation of of the CA Services bean that use a mockup
+ * This is an implementation of the CA Services bean that use a mockup
  * implementation of the CA repository purely based on storing CA repository
  * data in a local json file. This implementation is intended for test and evaluation
  * purposes only and SHOULD NOT be used in production.
@@ -48,13 +48,19 @@ import java.util.Map;
  * <p>It is highly recommended for production environments to implement a CA repository
  * based an a real database implementation with appropriate management of backup and protection
   * against conflicts and simultaneous storage and/or revocation requests</p>
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public class MockRepoCAServices extends AbstractDefaultCAServices {
 
+  /**
+   * Constructor for a mock repo CA service
+   *
+   * @param instanceConfiguration instance configuration
+   * @param pkiCredentialFactory ca credentials
+   * @param basicServiceConfig service configuration
+   * @param caRepositoryMap map of CA repositories
+   * @param applicationEventPublisher event publisher for audit logging
+   */
   @Autowired
   public MockRepoCAServices(InstanceConfiguration instanceConfiguration,
     PkiCredentialFactory pkiCredentialFactory, BasicServiceConfig basicServiceConfig, Map<String,
@@ -63,7 +69,8 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
   }
 
   /** {@inheritDoc} */
-  @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
+  @Override
+  protected AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
     throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     // Returning the same Basic CA service for any instance;
@@ -71,12 +78,14 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
   }
 
   /** {@inheritDoc} */
-  @Override protected void customizeOcspCertificateModel(DefaultCertificateModelBuilder certModelBuilder, String instance) {
+  @Override
+  protected void customizeOcspCertificateModel(DefaultCertificateModelBuilder certModelBuilder, String instance) {
     // We don't add any custom content of OCSP service certificates
   }
 
   /** {@inheritDoc} */
-  @Override protected X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
+  @Override
+  protected X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, CertificateIssuanceException {
     // Use the default self issued certificate implementation provided by the abstract class
     return defaultGenerateSelfIssuedCaCert(caKeySource, caConfigData);

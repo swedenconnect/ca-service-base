@@ -25,79 +25,135 @@ import java.util.Calendar;
 
 /**
  * CA instance configuration data
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CAConfigData {
+  /** Indicates if the CA service is enabled */
   Boolean enabled;
+  /** Certificate issuance configuration */
   CaConfig ca;
+  /** OCSP responder configuration */
   OCSPConfig ocsp;
 
-
+  /**
+   * Canfiguration for the certificate issuing part of the CA service
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   public static class CaConfig{
+    /** CA description */
     String description;
+    /** Type */
     String type;
+    /** Certificate signing algorithm */
     String algorithm;
+    /** Indicates if the CA may issue V1 certificates */
     Boolean allowV1;
+    /** The number of years the initial self issued CA certificate is valid */
     Integer selfIssuedValidYears;
+    /** The validity time of any certificates issued to the CAs own OCSP responder */
     Integer ocspCertValidityAmount;
+    /** Validity of issued certificates */
     ValidityData validity;
+    /** Validity of issued revocation lists */
     ValidityData crlValidity;
+    /** the key source of the CA */
     KeySourceData keySource;
+    /** The name of the CA */
     EntityNameProperties name;
+    /** path to a custom storage location for the CA repository data other than the instance data folder */
     String customCertStorageLocation;
   }
+
+  /**
+   * OCSP configuration data
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   public static class OCSPConfig{
+    /** Indicates if the OCSP service is enabled */
     Boolean enabled;
+    /** Algorithm used to sign OCSP responses */
     String algorithm;
+    /** Validity of OCSP responses */
     ValidityData validity;
+    /** OCSP responder key source */
     KeySourceData keySource;
+    /** Name of the OCSP responder */
     EntityNameProperties name;
   }
 
+  /**
+   * Validity data
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   public static class ValidityData{
+    /** the number of seconds the start validity should be adjusted compared to current time (- indicates time in the past) */
     Integer startOffsetSec;
+    /** The unit deciding validity time */
     ValidityUnit unit;
+    /** The number of units of validity deciding validity time */
     Integer amount;
   }
 
+  /**
+   * Enumeration of validity units
+   */
   @Getter
   @AllArgsConstructor
   public enum ValidityUnit {
+    /** Minute */
     M (Calendar.MINUTE),
+    /** Hour */
     H (Calendar.HOUR),
+    /** Day */
     D (Calendar.DAY_OF_YEAR),
+    /** Year */
     Y (Calendar.YEAR);
 
-    int unitType;
+    /** The {@link Calendar} constant of the time unit */
+    private final int unitType;
   }
 
+  /**
+   * Key source configuration
+   */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
   public static class KeySourceData {
+    /** Key source type */
     KeySourceType type;
+    /** Identifier of the resource holding the key data */
     String resource;
+    /** The alias of the key */
     String alias;
+    /** Password */
     String pass;
-    Boolean reloadableKeys;
   }
 
+  /**
+   * Key source type
+   */
   public enum KeySourceType {
-    none, create, jks, pem, pkcs11, pkcs12
+    /** No key source */
+    none,
+    /** Create a new key source */
+    create,
+    /** JKS key store */
+    jks,
+    /** PEM formatted keys, optionally encrypted private key */
+    pem,
+    /** PKCS11 provider linked to a HSM device */
+    pkcs11,
+    /** PKCS12 Key store */
+    pkcs12
   }
 
 

@@ -45,17 +45,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service information Bean
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Service information Bean building the service information about the CA service
  */
 @Slf4j
 @Configuration
 public class ServiceInfo {
 
+  /** Milliseconds in a week */
   private static final long WEEK_MILLISECONDS = 1000 * 60 * 60 * 24 * 7;
 
+  /** Information about the CA service */
   private CAServiceInfo caServiceInfo;
 
   @Value("${server.servlet.context-path:#{null}}") String servicePath;
@@ -70,6 +69,13 @@ public class ServiceInfo {
   private final CAServices caServices;
   private final InstanceConfiguration instanceConfig;
 
+  /**
+   * Bean constructor for Service information
+   *
+   * @param basicServiceConfig basic service configuration data
+   * @param caServices ca services
+   * @param instanceConfig CA instance configuration
+   */
   @Autowired
   public ServiceInfo(BasicServiceConfig basicServiceConfig, CAServices caServices,
     InstanceConfiguration instanceConfig) {

@@ -22,13 +22,24 @@ import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Spring component for logging audit events to the process log
+ */
 @Slf4j
 @Component
 public class AuditEventLogging {
 
+    /**
+     * Constructor
+     */
     public AuditEventLogging() {
     }
 
+    /**
+     * Function executed at audit events
+     *
+     * @param auditApplicationEvent the audit event
+     */
     @EventListener
     public void auditEventHappened(AuditApplicationEvent auditApplicationEvent) {
         AuditEvent auditEvent = auditApplicationEvent.getAuditEvent();

@@ -38,22 +38,33 @@ import java.util.Map;
 @ToString
 public class SyslogConfigProperties {
 
-    /**
-     * The syslog property map. Having a name of the syslog as key.
-     */
+    /** The syslog property map. Having a name of the syslog as key. */
     private List<SyslogConfigData> config;
+    /** Indicates if logging to syslog server is enabled */
     private boolean enabled;
 
+    /**
+     * Syslog config data
+     */
     @Data
     public static class SyslogConfigData {
+        /** Syslog host url */
         private String host;
+        /** Syslog service port (TCP or UDP) */
         private int port;
+        /** Facility identifier (0-23) */
         private int facility;
+        /** Severity code (0-7) */
         private Integer severity;
+        /** String alternative to severity. See: {@link com.cloudbees.syslog.Severity} */
         private String loglevel;
+        /** Using message format RFC_3164 when set to true. Using RFC_5424 (UDP) or RFC_5425 (TCP) when false */
         private boolean bsd;
+        /** udp, tcp or ssl */
         private String protocol;
+        /** Name of the sending client host */
         private String clienthostname;
+        /** Name of the sending client application */
         private String clientapp;
     }
 

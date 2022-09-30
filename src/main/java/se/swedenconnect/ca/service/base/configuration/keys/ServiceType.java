@@ -17,11 +17,12 @@
 package se.swedenconnect.ca.service.base.configuration.keys;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Supported service types
  */
 public enum ServiceType {
-  ocsp, ca;
+
+  /** OCSP service */
+  ocsp,
+  /** Certificate Authority service */
+  ca;
 }

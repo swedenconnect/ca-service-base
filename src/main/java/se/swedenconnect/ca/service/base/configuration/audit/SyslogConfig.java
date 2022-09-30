@@ -26,19 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Syslog message sender bean configuration
+ */
 @Configuration
 public class SyslogConfig {
 
     private static final Logger log = LoggerFactory.getLogger(SyslogConfig.class);
 
-    private final SyslogConfigProperties syslogConfigProperties;
-
-    public SyslogConfig(SyslogConfigProperties syslogConfigProperties) {
-        this.syslogConfigProperties = syslogConfigProperties;
-    }
-
     @Bean(name = "syslogMessageSender")
-    List<ExtSyslogMessageSender> syslogMessageSenderList() {
+    List<ExtSyslogMessageSender> syslogMessageSenderList(SyslogConfigProperties syslogConfigProperties) {
         List<SyslogConfigProperties.SyslogConfigData> syslogConfigList = syslogConfigProperties.getConfig();
         if (!syslogConfigProperties.isEnabled()) {
             log.info("No syslog server is configured. Logging to in memory audit log");

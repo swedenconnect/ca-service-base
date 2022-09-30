@@ -26,17 +26,18 @@ import java.util.List;
  */
 public class PEMKey {
 
+  /** the private key extracted from provided PEM data */
   @Getter PrivateKey privateKey;
 
   /**
    * Constructor, extracting any existing private key from a resource
-   * @param location
-   * @param password
-   * @throws IOException
-   * @throws OperatorCreationException
-   * @throws PKCSException
+   * @param location the location of the PEM data file
+   * @param password password used to decrypt PEM data, if relevant
+   * @throws IOException general data encoding errors
+   * @throws OperatorCreationException data decryption errors
+   * @throws PKCSException error decoding private key from encrypted PEM data
    */
-  public PEMKey(Resource location, String password) throws IOException, OperatorCreationException, PKCSException {
+  public PEMKey(final Resource location, final String password) throws IOException, OperatorCreationException, PKCSException {
     final List<Object> pemObjects = getPemObjects(location.getInputStream(), password);
     privateKey = pemObjects.stream()
       .filter(o -> o instanceof KeyPair || o instanceof PrivateKey)
@@ -53,9 +54,9 @@ public class PEMKey {
    * @param is Inputstream with the PEM resources
    * @param password Optional Password for decrypting PKCS8 private key
    * @return A list of objects (PrivateKey, KeyPair or X509CertificateHolder)
-   * @throws IOException
-   * @throws OperatorCreationException
-   * @throws PKCSException
+   * @throws IOException general data encoding errors
+   * @throws OperatorCreationException data decryption errors
+   * @throws PKCSException error decoding private key from encrypted PEM data
    */
   public static List<Object> getPemObjects(InputStream is, String password) throws IOException, OperatorCreationException, PKCSException {
     List<Object> pemObjList = new ArrayList<>();

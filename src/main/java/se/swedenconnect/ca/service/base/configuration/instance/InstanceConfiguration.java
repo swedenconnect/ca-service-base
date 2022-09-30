@@ -40,6 +40,12 @@ public class InstanceConfiguration {
 
   @Getter Map<String, CAConfigData> instanceConfigMap;
 
+  /**
+   * Constructor for instance configuration
+   *
+   * @param caServiceProperties the configuration properties of configured CA instances
+   * @param defaultName The default name elements of ca services
+   */
   public InstanceConfiguration(CAServiceProperties caServiceProperties,
     EntityNameProperties defaultName) {
     this.caServiceProperties = caServiceProperties;
