@@ -23,9 +23,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration properties for default name of configured CA services
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.default-name")

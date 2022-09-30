@@ -16,7 +16,6 @@
 
 package se.swedenconnect.ca.service.base.configuration.keys;
 
-
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -38,13 +37,13 @@ import java.security.Provider;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implements a factory for creating credentials based on configuration data
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public class PkiCredentialFactory {

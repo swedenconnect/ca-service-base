@@ -24,9 +24,6 @@ import java.util.Map;
 
 /**
  * Exception thrown on health warnings at service health checks
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class ServiceHealthWarningException extends RuntimeException{
 

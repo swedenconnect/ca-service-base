@@ -12,7 +12,11 @@ import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 import org.springframework.core.io.Resource;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.ArrayList;
@@ -20,9 +24,6 @@ import java.util.List;
 
 /**
  * Operations related to a key imported in PEM format where the key may be encrypted under a password.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class PEMKey {
 

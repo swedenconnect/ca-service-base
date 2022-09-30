@@ -18,15 +18,11 @@ package se.swedenconnect.ca.service.base.configuration.service;
 
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
  * Configuration info for service information used in HTML pages
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 @ConfigurationProperties(prefix = "ca-service.service-info")

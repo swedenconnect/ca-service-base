@@ -1,11 +1,7 @@
 package se.swedenconnect.ca.service.base.configuration.audit;
 
-import org.bouncycastle.cms.CMSSignedData;
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
-import se.swedenconnect.ca.cmc.auth.CMCReplayChecker;
 import se.swedenconnect.ca.cmc.auth.CMCValidator;
-
-import java.io.IOException;
 
 /**
  * This CMC request parser is a simplified CMC request parser that do not implement replay protection

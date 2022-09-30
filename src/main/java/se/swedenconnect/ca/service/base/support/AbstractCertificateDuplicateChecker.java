@@ -1,7 +1,6 @@
 package se.swedenconnect.ca.service.base.support;
 
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
@@ -27,9 +26,6 @@ import java.util.stream.Collectors;
  * This identifier will be inserted manually in configuration files upon blocking and should be as short as possible while still being unique
  * For this purpose SHA-1 seems ideal.
  * </p>
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public abstract class AbstractCertificateDuplicateChecker implements CertificateDuplicateChecker {

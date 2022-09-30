@@ -16,14 +16,10 @@
 
 package se.swedenconnect.ca.service.base.configuration.keys;
 
-import java.io.IOException;
 import java.security.PublicKey;
 
 /**
  * Interface for validating a public key
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public interface PublicKeyValidator {
 

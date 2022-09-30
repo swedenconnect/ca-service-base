@@ -36,7 +36,13 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -48,14 +54,34 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECParameterSpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * Basic X509 certificate static utils
+ */
 @Slf4j
 public class BasicX509Utils {
 
+    /** Hide constructor */
     private BasicX509Utils() {
     }
 
+    /**
+     * Generate a V1 certificate
+     * @param pair key pair
+     * @param subjectDN subject name
+     * @return X.509 V1 certificate
+     * @throws OperatorCreationException signing error
+     * @throws IOException data processing error
+     * @throws CertificateException error parsing certificate data
+     * @throws KeyStoreException key store error
+     */
     public static X509Certificate generateV1Certificate(KeyPair pair, X500Name subjectDN) throws OperatorCreationException, IOException, CertificateException, KeyStoreException {
         BigInteger certSerial = BigInteger.valueOf(System.currentTimeMillis());
         Calendar startTime = Calendar.getInstance();
@@ -71,12 +97,17 @@ public class BasicX509Utils {
         ContentSigner signer = (new JcaContentSignerBuilder("SHA512WITHRSA")).build(pair.getPrivate());
         byte[] encoded = certGen.build(signer).getEncoded();
         CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        InputStream is = new ByteArrayInputStream(encoded);
-        X509Certificate certificate = (X509Certificate) fact.generateCertificate(is);
-        is.close();
-        return certificate;
+        try(InputStream is = new ByteArrayInputStream(encoded)) {
+            return  (X509Certificate) fact.generateCertificate(is);
+        }
     }
 
+    /**
+     * Get X500 distinguished name
+     *
+     * @param nameMap name type and value map
+     * @return {@link X500Name}
+     */
     public static X500Name getDn(Map<X509DnNameType, String> nameMap) {
         Set<X509DnNameType> keySet = nameMap.keySet();
         RDN[] rdnArray = new RDN[keySet.size()];
@@ -97,9 +128,9 @@ public class BasicX509Utils {
      * Retrieve a list of PEM objects found in the provided input stream that are of the types PrivateKey (Plaintext), KeyPair or certificate*
      * @param is Inputstream with the PEM resources
      * @return A list of objects (PrivateKey, KeyPair or X509CertificateHolder)
-     * @throws IOException
-     * @throws OperatorCreationException
-     * @throws PKCSException
+     * @throws IOException data handling error
+     * @throws OperatorCreationException key handling error
+     * @throws PKCSException PKCS8 error
      */
     public static List<Object> getPemObjects(InputStream is) throws IOException, OperatorCreationException, PKCSException {
         return  getPemObjects(is,null);
@@ -110,9 +141,9 @@ public class BasicX509Utils {
      * @param is Inputstream with the PEM resources
      * @param password Optional Password for decrypting PKCS8 private key
      * @return A list of objects (PrivateKey, KeyPair or X509CertificateHolder)
-     * @throws IOException
-     * @throws OperatorCreationException
-     * @throws PKCSException
+     * @throws IOException data handling error
+     * @throws OperatorCreationException key handling error
+     * @throws PKCSException PKCS8 error
      */
     public static List<Object> getPemObjects(InputStream is, String password) throws IOException, OperatorCreationException, PKCSException {
         List<Object> pemObjList = new ArrayList<>();
@@ -182,10 +213,25 @@ public class BasicX509Utils {
         }
     }
 
+    /**
+     * Get PEM certificate
+     *
+     * @param cert certificate bytes
+     * @return PEM certificate
+     * @throws IOException data parsing error
+     * @throws CertificateException certificate encoding exception
+     */
     public static String getPemCert(byte[] cert) throws IOException, CertificateException {
         return getPemCert(getCertificate(cert));
     }
 
+    /**
+     * Get PEM certificate
+     *
+     * @param cert X.509 certificate
+     * @return PEM certificate
+     * @throws IOException error parsing data
+     */
     public static String getPemCert(X509Certificate cert) throws IOException {
         StringWriter sw = new StringWriter();
         try (JcaPEMWriter jpw = new JcaPEMWriter(sw)) {
@@ -194,6 +240,13 @@ public class BasicX509Utils {
         return sw.toString();
     }
 
+    /**
+     * Get ordered list of certificates
+     *
+     * @param unorderedCertList unordered certificate list
+     * @param leaf the starting certificate in the chain
+     * @return chain order list with the leaf first and root last
+     */
     public static List<X509CertificateHolder> getOrderedCertList(List<X509CertificateHolder> unorderedCertList, X509CertificateHolder leaf) {
         try {
             List<X509Certificate> chain = new ArrayList<>();
@@ -215,6 +268,14 @@ public class BasicX509Utils {
             throw new RuntimeException("Unable to parse X509Certificate object");
         }
     }
+
+    /**
+     * Get ordered list of certificates
+     *
+     * @param unorderedCertList unordered certificate list
+     * @param leaf the starting certificate in the chain
+     * @return chain order list with the leaf first and root last
+     */
     public static List<X509Certificate> getOrderedCertList(List<X509Certificate> unorderedCertList, X509Certificate leaf) {
         List<X509Certificate> orderedCertList = new ArrayList<>();
 
@@ -257,6 +318,12 @@ public class BasicX509Utils {
 
     }
 
+    /**
+     * Predicament if the certificate is self-signed
+     *
+     * @param cert certificate
+     * @return true if the certificate is self-signed (self issued).
+     */
     public static boolean isSelfSigned(X509Certificate cert) {
         try {
             cert.verify(cert.getPublicKey());
@@ -267,10 +334,22 @@ public class BasicX509Utils {
         return false;
     }
 
+    /**
+     * Predicament if the certificate is a leaf certificate
+     * @param cert certificate
+     * @return true if the certificate is not a CA certificate
+     */
     public static boolean isEECert(X509Certificate cert) {
         return cert.getBasicConstraints() == -1;
     }
 
+    /**
+     * Get the key length of a public key
+     *
+     * @param publicKey public key
+     * @return key length in bits
+     * @throws PublicKeyPolicyException error parsing key length data
+     */
     public static int getKeyLength(PublicKey publicKey) throws PublicKeyPolicyException {
         if (publicKey instanceof RSAPublicKey){
             final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;

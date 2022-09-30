@@ -46,7 +46,6 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBui
 import se.swedenconnect.ca.engine.ca.models.cert.impl.ExplicitCertNameModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
-import se.swedenconnect.ca.engine.configuration.ExternalChainCredential;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPModel;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
@@ -71,7 +70,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +104,15 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
   private final Map<String, CARepository> caRepositoryMap;
   private final ApplicationEventPublisher applicationEventPublisher;
 
+  /**
+   * Abstract default CA service constructor
+   *
+   * @param instanceConfiguration CA service instance configuration
+   * @param pkiCredentialFactory factory for creating PkiCredential from configuration data
+   * @param basicServiceConfig basic service configuration data
+   * @param caRepositoryMap ca repository map
+   * @param applicationEventPublisher application event publisher for audit logging
+   */
   public AbstractDefaultCAServices(InstanceConfiguration instanceConfiguration, PkiCredentialFactory pkiCredentialFactory,
     BasicServiceConfig basicServiceConfig, Map<String, CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher) {
     super(instanceConfiguration);
@@ -419,8 +433,10 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param caKeySource  CA key source
    * @param caConfigData CA configuration properties
    * @param instance     The instance identifier
+   * @param baseUrl base URL
    * @return self issued certificate
    * @throws NoSuchAlgorithmException if the algorithm is not supported
+   * @throws CertificateIssuanceException error issuing certificate
    */
   protected abstract X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, CertificateIssuanceException;
@@ -432,6 +448,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param caConfigData CA configuration properties
    * @return self issued certificate
    * @throws NoSuchAlgorithmException if the algorithm is not supported
+   * @throws CertificateIssuanceException error issuing certificate
    */
   protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData)
     throws NoSuchAlgorithmException, CertificateIssuanceException {

@@ -6,9 +6,6 @@ import java.security.cert.X509Certificate;
 
 /**
  * The default processor for handling equivalent certificates
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
 public class DefaultCertificateDuplicateChecker extends AbstractCertificateDuplicateChecker {

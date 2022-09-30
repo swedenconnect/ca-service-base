@@ -34,19 +34,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
 import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
-import se.swedenconnect.ca.service.base.ca.CAServices;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CRL information controller used to provide CRL data
  */
 @Slf4j
 @RestController

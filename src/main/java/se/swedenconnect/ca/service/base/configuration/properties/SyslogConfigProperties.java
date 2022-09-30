@@ -20,17 +20,11 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Configuration Bean for Syslog properties for export of audit log data to syslog
- *
- * @author Stefan Santesson (stefan@aaa-sec.com)
- * @author Martin Lindström (martin.lindstrom@litsec.se)
- *
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.syslog")

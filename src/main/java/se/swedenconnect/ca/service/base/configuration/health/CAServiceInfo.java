@@ -16,7 +16,11 @@
 
 package se.swedenconnect.ca.service.base.configuration.health;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 

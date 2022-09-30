@@ -27,10 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CA instance configuration data
  */
 @Component
 public class InstanceConfiguration {
@@ -130,7 +127,6 @@ public class InstanceConfiguration {
     keySourceData.setResource((String) getValue(prop.getResource(), defaultValue.getResource()));
     keySourceData.setAlias((String) getValue(prop.getAlias(), defaultValue.getAlias()));
     keySourceData.setPass((String) getValue(prop.getPass(), defaultValue.getPass()));
-    keySourceData.setReloadableKeys((Boolean) getValue(prop.getReloadableKeys(), defaultValue.getReloadableKeys()));
     return keySourceData;
   }
 

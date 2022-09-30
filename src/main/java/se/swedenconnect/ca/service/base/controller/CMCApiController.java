@@ -55,12 +55,12 @@ import se.swedenconnect.ca.cmc.auth.CMCUtils;
 import se.swedenconnect.ca.cmc.model.request.CMCRequestType;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
 import se.swedenconnect.ca.service.base.configuration.audit.CAAuditEventData;
 import se.swedenconnect.ca.service.base.configuration.cmc.CMCPortConstraints;
-import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 
 import javax.servlet.http.HttpServletRequest;

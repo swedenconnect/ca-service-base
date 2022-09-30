@@ -27,10 +27,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
-import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.ca.CAServices;
-import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
+import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
@@ -41,7 +41,11 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**

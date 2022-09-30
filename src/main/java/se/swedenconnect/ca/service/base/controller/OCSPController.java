@@ -36,9 +36,6 @@ import java.io.IOException;
 
 /**
  * Spring Boot controller for providing the functionality of an OCSP responder
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @RestController
 @Slf4j

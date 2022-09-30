@@ -1,18 +1,12 @@
 package se.swedenconnect.ca.service.base.configuration;
 
 import lombok.Getter;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.util.encoders.Base64;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Embedded logo object used to provide a local image file as data URL.

@@ -16,12 +16,12 @@
 
 package se.swedenconnect.ca.service.base.configuration;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.AuditEventRepository;
@@ -43,7 +43,11 @@ import java.io.IOException;
 import java.security.Provider;
 import java.security.Security;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -51,23 +55,31 @@ import java.util.stream.Collectors;
  */
 @Configuration
 @Slf4j
+@NoArgsConstructor
 public class BeanConfig implements ApplicationEventPublisherAware {
 
   private ApplicationEventPublisher applicationEventPublisher;
-  private final List<ExtSyslogMessageSender> syslogMessageSenderList;
 
-  @Autowired
-  public BeanConfig(List<ExtSyslogMessageSender> syslogMessageSenderList) {
-    this.syslogMessageSenderList = syslogMessageSenderList;
-  }
-
+  /**
+   * Service listener bean
+   *
+   * @return {@link ServletListenerRegistrationBean}
+   */
   @Bean
-  ServletListenerRegistrationBean<ServletContextListener> proxyServiceContextListener() {
+  ServletListenerRegistrationBean<ServletContextListener> serviceContextListener() {
     ServletListenerRegistrationBean<ServletContextListener> servletListenerRegistrationBean = new ServletListenerRegistrationBean<>();
     servletListenerRegistrationBean.setListener(new CAServiceContextListener(applicationEventPublisher));
     return servletListenerRegistrationBean;
   }
 
+  /**
+   * Basic service configuration
+   *
+   * @param configLocation configuration data location
+   * @param serviceBaseUrl service base URL
+   * @param serviceContextPath context path of the service
+   * @return basic service configuration
+   */
   @Bean (name = "BasicServiceConfig")
   BasicServiceConfig basicServiceConfig(
     @Value("${ca-service.config.data-directory}") String configLocation,
@@ -103,6 +115,12 @@ public class BeanConfig implements ApplicationEventPublisherAware {
     return basicServiceConfig;
   }
 
+  /**
+   * Create the PKI Credential factory
+   *
+   * @param hsmExternalCfgLocations the locations of external PKCS11 configuration files
+   * @return {@link PkiCredentialFactory}
+   */
   @Bean
   PkiCredentialFactory pkiCredentialFactory(
     @Value("${ca-service.pkcs11.external-config-locations:#{null}}") List<String> hsmExternalCfgLocations) {
@@ -117,9 +135,16 @@ public class BeanConfig implements ApplicationEventPublisherAware {
     return pkiCredentialFactory;
   }
 
+  /**
+   * Provide an {@link AuditEventRepository} for audit logging
+   *
+   * @param syslogMessageSenderList the list of syslog message senders
+   * @return {@link AuditEventRepository}
+   * @throws Exception error instantiating the bean
+   */
   @Bean
   @DependsOn("syslogMessageSender")
-  AuditEventRepository auditEventRepository() throws Exception {
+  AuditEventRepository auditEventRepository(List<ExtSyslogMessageSender> syslogMessageSenderList) throws Exception {
     if (syslogMessageSenderList.isEmpty()) {
       return new InMemoryAuditEventRepository();
     }
@@ -148,10 +173,20 @@ public class BeanConfig implements ApplicationEventPublisherAware {
 
   }
 
+  /** {@inheritDoc} */
   @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }
 
+  /**
+   * Creates a logo map bean based on logotype configuration
+   *
+   * @param resourceLoader image resource loader
+   * @param logoLocation service logo location
+   * @param iconLocation service icon location
+   * @return logotype data map
+   * @throws Exception error parsing data
+   */
   @Bean
   Map<String, EmbeddedLogo> logoMap(
     ResourceLoader resourceLoader,

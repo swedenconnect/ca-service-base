@@ -24,10 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Map;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CA service configuration properties
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.instance")

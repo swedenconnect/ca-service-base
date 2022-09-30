@@ -16,7 +16,11 @@
 
 package se.swedenconnect.ca.service.base.configuration.cmc;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import se.swedenconnect.ca.cmc.auth.AuthorizedCmcOperation;

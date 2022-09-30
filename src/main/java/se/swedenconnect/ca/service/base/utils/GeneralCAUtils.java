@@ -25,13 +25,21 @@ import org.bouncycastle.openssl.PEMParser;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
- * Description
+ * General static CA service utilities
  */
 public class GeneralCAUtils {
 

@@ -7,9 +7,6 @@ import java.util.List;
  * Interface for providing generic functions related to identification and sorting among equivalent certificates.
  *
  * Equivalent certificates are certificates issued to the same subject, for the same key, for the same purpose
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public interface CertificateDuplicateChecker {
 

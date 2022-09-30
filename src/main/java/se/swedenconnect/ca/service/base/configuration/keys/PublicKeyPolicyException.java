@@ -20,9 +20,6 @@ import java.io.IOException;
 
 /**
  * Violations of public key policy
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 public class PublicKeyPolicyException extends IOException {
 

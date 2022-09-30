@@ -28,12 +28,23 @@ import java.util.Map;
  */
 public class AuditEventFactory {
 
+    /** The default audit record principal */
     public static final String DEFAULT_AUDIT_PRINCIPAL = "CA Service";
+
+    /** Date format for formatting Date to String */
     private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    /** Hide constructor */
     private AuditEventFactory() {
     }
 
+    /**
+     * Get audit event
+     *
+     * @param event event
+     * @param message message
+     * @return {@link AuditApplicationEvent}
+     */
     public static AuditApplicationEvent getAuditEvent(AuditEventEnum event, String message) {
         return getAuditEvent(event, null, message);
     }
