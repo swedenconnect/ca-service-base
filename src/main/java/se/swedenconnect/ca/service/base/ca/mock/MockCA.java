@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,12 +36,12 @@ import java.security.cert.CertificateEncodingException;
 import java.util.List;
 
 /**
- * This is a Mock test implementation of a Basic CA used in the MocRepoCAServices
+ * This is a Mock test implementation of a Basic CA used in the MocRepoCAServices.
  */
 public class MockCA extends AbstractBasicCA {
 
   /**
-   * Constructor for Mock CA
+   * Constructor for Mock CA.
    *
    * @param issuerCredential issuer credentials
    * @param caRepository CA repository

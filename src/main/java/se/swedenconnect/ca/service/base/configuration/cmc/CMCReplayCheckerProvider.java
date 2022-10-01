@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ package se.swedenconnect.ca.service.base.configuration.cmc;
 import se.swedenconnect.ca.cmc.auth.CMCReplayChecker;
 
 /**
- * Provider for CMC replay checkers
+ * Provider for CMC replay checkers.
  */
 public interface CMCReplayCheckerProvider {
 
   /**
-   * Get the assigned CMC replay checker for a CA instance
+   * Get the assigned CMC replay checker for a CA instance.
+   *
    * @param instance CA instance
    * @return CMC replay checker
    */

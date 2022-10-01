@@ -2,7 +2,7 @@
 
 # CA Service Base
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/se.swedenconnect.ca/ca-service-base/badge.svg)](https://maven-badges.herokuapp.com/maven-central/se.swedenconnect.ca/ca-service-base)
 
 This repository provides the core classes for a Spring Boot application that implements CA services
 based on the following base libraries:

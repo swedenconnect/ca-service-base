@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Enumeration of X.509 certificate distinguished name attributes
+ * Enumeration of X.509 certificate distinguished name attributes.
  */
 @AllArgsConstructor
 @Getter

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Daemon performing timed events of the CA service base application
+ * Daemon performing timed events of the CA service base application.
  *
  * ca-service.config.remove-expired-certs=false;
  * ca-service.config.remove-expired-grace-seconds=86400;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,20 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Spring component for logging audit events to the process log
+ * Spring component for logging audit events to the process log.
  */
 @Slf4j
 @Component
 public class AuditEventLogging {
 
     /**
-     * Constructor
+     * Constructor.
      */
     public AuditEventLogging() {
     }
 
     /**
-     * Function executed at audit events
+     * Function executed at audit events.
      *
      * @param auditApplicationEvent the audit event
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ import java.util.Optional;
 /**
  * Extended Syslog Message sender.
  * <p>
- * This class is setup based on the settings for a syslog host in syslog.properties
+ * This class is setup based on the settings for a syslog host in syslog.properties.
  * <p>
- * This syslog message sender has an extra message send function for logging an AuditEvent, with extra functionality
+ * This syslog message sender has an extra message send function for logging an AuditEvent, with extra functionality.
  */
 public class ExtSyslogMessageSender implements SyslogMessageSender {
 
@@ -55,7 +55,7 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
   private final Facility facility;
 
   /**
-   * Constructor for syslog message sender setting up the connection to the syslog server
+   * Constructor for syslog message sender setting up the connection to the syslog server.
    *
    * @param syslogConfigData syslog configuration data
    */

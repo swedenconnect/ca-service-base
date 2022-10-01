@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import java.util.Calendar;
 
 /**
- * CA instance configuration data
+ * CA instance configuration data.
  */
 @Data
 @NoArgsConstructor
