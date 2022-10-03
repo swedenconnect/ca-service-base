@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.ca.impl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * The first level of abstract implementation of the CAServices interface.
  *
- * The CAServices interface is designed to hold a whole set of individual CA instances
- * based on property settings.
+ * The CAServices interface is designed to hold a whole set of individual CA instances based on property settings.
  */
 public abstract class AbstractCAServices implements CAServices {
 
@@ -39,19 +37,21 @@ public abstract class AbstractCAServices implements CAServices {
    *
    * @param instanceConfiguration configuration data
    */
-  public AbstractCAServices(InstanceConfiguration instanceConfiguration){
+  public AbstractCAServices(final InstanceConfiguration instanceConfiguration) {
     this.instanceConfiguration = instanceConfiguration;
   }
 
   /** {@inheritDoc} */
-  @Override public List<String> getCAServiceKeys() {
-    return new ArrayList<>(instanceConfiguration.getInstanceConfigMap().keySet());
+  @Override
+  public List<String> getCAServiceKeys() {
+    return new ArrayList<>(this.instanceConfiguration.getInstanceConfigMap().keySet());
   }
 
   /** {@inheritDoc} */
-  @Override public boolean isServiceEnabled(String key) {
-    if (instanceConfiguration.getInstanceConfigMap().containsKey(key)){
-      CAConfigData caConfigData = instanceConfiguration.getInstanceConfigMap().get(key);
+  @Override
+  public boolean isServiceEnabled(final String key) {
+    if (this.instanceConfiguration.getInstanceConfigMap().containsKey(key)) {
+      final CAConfigData caConfigData = this.instanceConfiguration.getInstanceConfigMap().get(key);
       return caConfigData.getEnabled();
     }
     return false;

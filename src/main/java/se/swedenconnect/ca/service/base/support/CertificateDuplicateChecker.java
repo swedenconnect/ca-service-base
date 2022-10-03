@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.support;
 
 import java.security.cert.X509Certificate;
@@ -27,15 +26,16 @@ import java.util.List;
 public interface CertificateDuplicateChecker {
 
   /**
-   * Function for providing a unique identifier of a certificate. This ID must be the same both before and after cross certification
-   * under the policy root. Suitable parameters to use as input are subject name and subject key. Unsuitable parameters are issuer and
-   * similar parameters that will change when the certificate is re-issued under a new issuer in the cross-certification process.
+   * Function for providing a unique identifier of a certificate. This ID must be the same both before and after cross
+   * certification under the policy root. Suitable parameters to use as input are subject name and subject key.
+   * Unsuitable parameters are issuer and similar parameters that will change when the certificate is re-issued under a
+   * new issuer in the cross-certification process.
    *
    * @param certificate the certificate
-   * @return certificate identifier that is unique among different certificates, but identical for certificates
-   * issued to the same subject using the same public key
+   * @return certificate identifier that is unique among different certificates, but identical for certificates issued
+   *           to the same subject using the same public key
    */
-  String getCertId(X509Certificate certificate);
+  String getCertId(final X509Certificate certificate);
 
   /**
    * This reduces a list of certificates and removes equivalent (re-issued) certificates issued to the same entity
@@ -43,6 +43,6 @@ public interface CertificateDuplicateChecker {
    * @param certificateList list of certificates to filter
    * @return list of the latest unique certificates issued found in the provided list of certificates
    */
-  List<X509Certificate> removeEquivalentCerts(List<X509Certificate> certificateList);
+  List<X509Certificate> removeEquivalentCerts(final List<X509Certificate> certificateList);
 
 }

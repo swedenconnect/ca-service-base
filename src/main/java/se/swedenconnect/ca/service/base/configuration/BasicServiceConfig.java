@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration;
+
+import java.io.File;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.File;
 
 /**
  * Basic service configuration.
@@ -30,10 +29,12 @@ import java.io.File;
 @AllArgsConstructor
 public class BasicServiceConfig {
 
-  /** The base URL to the host of this application (URL without context path)*/
+  /** The base URL to the host of this application (URL without context path) */
   private String serviceHostUrl;
+
   /** The full URL to this service including context path */
   private String serviceUrl;
+
   /** The main data storage location for data associated with this service */
   private File dataStoreLocation;
 

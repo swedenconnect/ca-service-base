@@ -13,27 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.health;
-
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
-import se.swedenconnect.ca.engine.ca.issuer.CAService;
-import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
-import se.swedenconnect.ca.service.base.ca.CAServices;
-import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
-import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
-import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
-import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
-import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +28,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
+
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.service.base.ca.CAServices;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
+import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
+import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
+import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
+import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
+
 /**
  * Service information Bean building the service information about the CA service.
  */
@@ -61,28 +60,41 @@ public class ServiceInfo {
   /** Information about the CA service */
   private CAServiceInfo caServiceInfo;
 
-  @Value("${server.servlet.context-path:#{null}}") String servicePath;
-  @Value(("${tomcat.ajp.enabled}")) boolean ajpEnabled;
-  @Value(("${tomcat.ajp.port}")) int ajpPort;
-  @Value(("${tomcat.ajp.secret}")) String ajpSecret;
-  @Value(("${server.port}")) int servicePort;
-  @Value(("${management.server.port}")) int managePort;
-  @Value(("${ca-service.config.control-port}")) int adminPort;
+  @Value("${server.servlet.context-path:#{null}}")
+  String servicePath;
+
+  @Value("${tomcat.ajp.enabled}")
+  boolean ajpEnabled;
+
+  @Value("${tomcat.ajp.port}")
+  int ajpPort;
+
+  @Value("${tomcat.ajp.secret}")
+  String ajpSecret;
+
+  @Value("${server.port}")
+  int servicePort;
+
+  @Value("${management.server.port}")
+  int managePort;
+
+  @Value("${ca-service.config.control-port}")
+  int adminPort;
 
   private final BasicServiceConfig basicServiceConfig;
   private final CAServices caServices;
   private final InstanceConfiguration instanceConfig;
 
   /**
-   * Bean constructor for Service information
+   * Bean constructor for Service information.
    *
    * @param basicServiceConfig basic service configuration data
    * @param caServices ca services
    * @param instanceConfig CA instance configuration
    */
   @Autowired
-  public ServiceInfo(BasicServiceConfig basicServiceConfig, CAServices caServices,
-    InstanceConfiguration instanceConfig) {
+  public ServiceInfo(final BasicServiceConfig basicServiceConfig, final CAServices caServices,
+      final InstanceConfiguration instanceConfig) {
     this.basicServiceConfig = basicServiceConfig;
     this.caServices = caServices;
     this.instanceConfig = instanceConfig;
@@ -90,43 +102,44 @@ public class ServiceInfo {
   }
 
   /**
-   * Returns the collected proxy service information
+   * Returns the collected proxy service information.
    *
    * @return Proxy Service information
    */
   public CAServiceInfo getCaServiceInfo() {
-    collectServiceInfo();
-    return caServiceInfo;
+    this.collectServiceInfo();
+    return this.caServiceInfo;
   }
 
   /**
-   * Test the configuration data
+   * Test the configuration data.
    *
-   * @throws RuntimeException This exception is thrown if an error is found. The nature of the error is provided in the exception message.
+   * @throws RuntimeException This exception is thrown if an error is found. The nature of the error is provided in the
+   *           exception message.
    */
   public void testConfiguration() throws RuntimeException {
-    collectServiceInfo();
-    //Test basic parameters
-    if (!StringUtils.hasText(caServiceInfo.getContextPath())) {
+    this.collectServiceInfo();
+    // Test basic parameters
+    if (!StringUtils.hasText(this.caServiceInfo.getContextPath())) {
       log.debug("Service context path is not specified - Allowed configuration");
     }
 
-    if (!StringUtils.hasText(caServiceInfo.getServiceUrl())) {
+    if (!StringUtils.hasText(this.caServiceInfo.getServiceUrl())) {
       throw new IllegalArgumentException("Service URL is not specified");
     }
 
-    List<CAServiceInfo.CAInstanceInfo> caInstances = caServiceInfo.getCaInstances();
+    final List<CAServiceInfo.CAInstanceInfo> caInstances = this.caServiceInfo.getCaInstances();
     if (caInstances == null || caInstances.isEmpty()) {
       throw new IllegalArgumentException("No CA service instances are configured");
     }
 
-    for (CAServiceInfo.CAInstanceInfo caInstanceInfo : caInstances) {
-      String instance = caInstanceInfo.getId();
+    for (final CAServiceInfo.CAInstanceInfo caInstanceInfo : caInstances) {
+      final String instance = caInstanceInfo.getId();
       if (!StringUtils.hasText(caInstanceInfo.getKeySourceType())) {
         throw new IllegalArgumentException("CA key source type is undefined for instance " + instance);
       }
 
-      CAServiceInfo.KeyInfo keyInfo = caInstanceInfo.getKeyInfo();
+      final CAServiceInfo.KeyInfo keyInfo = caInstanceInfo.getKeyInfo();
       if (keyInfo == null) {
         throw new IllegalArgumentException("No CA key present for instance " + instance);
       }
@@ -158,27 +171,29 @@ public class ServiceInfo {
       }
 
       if (caInstanceInfo.isOscpEnabled()) {
-        CAServiceInfo.OCSPInfo ocspInfo = caInstanceInfo.getOcspInfo();
+        final CAServiceInfo.OCSPInfo ocspInfo = caInstanceInfo.getOcspInfo();
         if (!StringUtils.hasText(ocspInfo.getOcspServiceUrl())) {
           throw new IllegalArgumentException("No OCSP service URL is specified for instance " + instance);
         }
         if (ocspInfo.isSeparateEntity()) {
-          CAServiceInfo.OCSPEntityInfo ocspEntity = ocspInfo.getOcspEntity();
-          OCSPResponder ocspResponder = caServices.getCAService(instance).getOCSPResponder();
+          ocspInfo.getOcspEntity();
+          this.caServices.getCAService(instance).getOCSPResponder();
           X509CertificateHolder ocspCert = null;
           try {
-            ocspCert = GeneralCAUtils.getOcspCert(basicServiceConfig.getDataStoreLocation(), instance);
-          } catch (Exception ex) {
+            ocspCert = GeneralCAUtils.getOcspCert(this.basicServiceConfig.getDataStoreLocation(), instance);
+          }
+          catch (final Exception ex) {
             throw new RuntimeException("unable to parse OCSP certificate: " + ex.getMessage());
           }
-          Date ocspCertNotAfter = ocspCert.getNotAfter();
-          Date currentTime = new Date();
-          Date aWeekFromNow = new Date(System.currentTimeMillis() + WEEK_MILLISECONDS);
-          if (ocspCertNotAfter.before(currentTime)){
+          final Date ocspCertNotAfter = ocspCert.getNotAfter();
+          final Date currentTime = new Date();
+          final Date aWeekFromNow = new Date(System.currentTimeMillis() + WEEK_MILLISECONDS);
+          if (ocspCertNotAfter.before(currentTime)) {
             throw new IllegalArgumentException("The OCSP certificate has expired");
           }
-          if (ocspCertNotAfter.before(aWeekFromNow)){
-            ServiceHealthWarningException warning = new ServiceHealthWarningException("The OCSP certificate will expire soon");
+          if (ocspCertNotAfter.before(aWeekFromNow)) {
+            final ServiceHealthWarningException warning =
+                new ServiceHealthWarningException("The OCSP certificate will expire soon");
             warning.addDetail("expiryDate:", ocspCertNotAfter);
             warning.addDetail("ocspIssuer: ", ocspCert.getSubject().toString());
             throw warning;
@@ -193,149 +208,152 @@ public class ServiceInfo {
   }
 
   private void collectServiceInfo() {
-    //General info
+    // General info
     this.caServiceInfo = CAServiceInfo.builder()
 
-      .contextPath(servicePath)
-      .serviceUrl(basicServiceConfig.getServiceUrl())
-      .servicePort(servicePort)
-      .adminPort(adminPort)
-      .managePort(managePort)
-      .ajpConfig(ajpEnabled ? new CAServiceInfo.AJPInfo(ajpPort, StringUtils.hasText(ajpSecret)) : null)
-      .caInstances(getCAInstancesInfo())
-      .build();
+        .contextPath(this.servicePath)
+        .serviceUrl(this.basicServiceConfig.getServiceUrl())
+        .servicePort(this.servicePort)
+        .adminPort(this.adminPort)
+        .managePort(this.managePort)
+        .ajpConfig(
+            this.ajpEnabled ? new CAServiceInfo.AJPInfo(this.ajpPort, StringUtils.hasText(this.ajpSecret)) : null)
+        .caInstances(this.getCAInstancesInfo())
+        .build();
   }
 
   private List<CAServiceInfo.CAInstanceInfo> getCAInstancesInfo() {
-    List<CAServiceInfo.CAInstanceInfo> caInstanceInfoList = new ArrayList<>();
-    Map<String, CAConfigData> caConfigDataMap = instanceConfig.getInstanceConfigMap();
+    final List<CAServiceInfo.CAInstanceInfo> caInstanceInfoList = new ArrayList<>();
+    final Map<String, CAConfigData> caConfigDataMap = this.instanceConfig.getInstanceConfigMap();
 
     if (caConfigDataMap == null) {
       return caInstanceInfoList;
     }
 
-    List<String> instances = new ArrayList<>(caConfigDataMap.keySet());
+    final List<String> instances = new ArrayList<>(caConfigDataMap.keySet());
 
-    for (String instance : instances) {
+    for (final String instance : instances) {
       // Extract all information about this instance;
-      CAConfigData caConfigData = caConfigDataMap.get(instance);
-      CAConfigData.CaConfig caConfig = caConfigData.getCa();
-      CAConfigData.OCSPConfig ocspConfig = caConfigData.getOcsp();
-      if (!getBoolean(caConfigData.getEnabled())) {
+      final CAConfigData caConfigData = caConfigDataMap.get(instance);
+      final CAConfigData.CaConfig caConfig = caConfigData.getCa();
+      final CAConfigData.OCSPConfig ocspConfig = caConfigData.getOcsp();
+      if (!this.getBoolean(caConfigData.getEnabled())) {
         caInstanceInfoList.add(CAServiceInfo.CAInstanceInfo.builder().enabled(false).build());
         continue;
       }
-      CAService caService = caServices.getCAService(instance);
-      List<String> dnList = getDnList(instance);
-      X509CertificateHolder ocspCert = getOcspCert(instance);
+      final CAService caService = this.caServices.getCAService(instance);
+      final List<String> dnList = this.getDnList(instance);
+      final X509CertificateHolder ocspCert = this.getOcspCert(instance);
       List<String> crlDistributionPoints = new ArrayList<>();
       String ocspResponderUrl = null;
       if (caService instanceof AbstractBasicCA) {
-        AbstractBasicCA basicCAService = (AbstractBasicCA) caService;
+        final AbstractBasicCA basicCAService = (AbstractBasicCA) caService;
         crlDistributionPoints = basicCAService.getCrlDistributionPoints();
         ocspResponderUrl = basicCAService.getOCSPResponderURL();
       }
 
       // Store info
       caInstanceInfoList.add(CAServiceInfo.CAInstanceInfo.builder()
-        .id(instance)
-        .enabled(true)
-        .serviceType(caConfig.getType())
-        .caPath(dnList)
-        .dn(caService.getCaCertificate().getSubject().toString())
-        .crlDistributionPoints(crlDistributionPoints)
-        .algorithm(caConfig.getAlgorithm())
-        .keySourceType(caConfig.getKeySource().getType().name())
-        .keyInfo(getKeyInfoData(caService.getCaCertificate()))
-        .oscpEnabled(getBoolean(ocspConfig.getEnabled()))
-        .ocspInfo(getOcspInfo(ocspConfig, ocspResponderUrl, ocspCert))
-        .build());
+          .id(instance)
+          .enabled(true)
+          .serviceType(caConfig.getType())
+          .caPath(dnList)
+          .dn(caService.getCaCertificate().getSubject().toString())
+          .crlDistributionPoints(crlDistributionPoints)
+          .algorithm(caConfig.getAlgorithm())
+          .keySourceType(caConfig.getKeySource().getType().name())
+          .keyInfo(this.getKeyInfoData(caService.getCaCertificate()))
+          .oscpEnabled(this.getBoolean(ocspConfig.getEnabled()))
+          .ocspInfo(this.getOcspInfo(ocspConfig, ocspResponderUrl, ocspCert))
+          .build());
     }
     return caInstanceInfoList;
   }
 
-  private CAServiceInfo.OCSPInfo getOcspInfo(CAConfigData.OCSPConfig ocspConfig, String ocspServiceUrl, X509CertificateHolder ocspCert) {
-    CAServiceInfo.OCSPInfo.OCSPInfoBuilder builder = CAServiceInfo.OCSPInfo.builder();
-    if (ocspConfig == null || !getBoolean(ocspConfig.getEnabled())) {
+  private CAServiceInfo.OCSPInfo getOcspInfo(final CAConfigData.OCSPConfig ocspConfig, final String ocspServiceUrl,
+      final X509CertificateHolder ocspCert) {
+    final CAServiceInfo.OCSPInfo.OCSPInfoBuilder builder = CAServiceInfo.OCSPInfo.builder();
+    if (ocspConfig == null || !this.getBoolean(ocspConfig.getEnabled())) {
       return null;
     }
-    CAConfigData.KeySourceData keySource = ocspConfig.getKeySource();
+    final CAConfigData.KeySourceData keySource = ocspConfig.getKeySource();
     builder
-      .ocspServiceUrl(ocspServiceUrl)
-      .separateEntity(ocspCert != null);
+        .ocspServiceUrl(ocspServiceUrl)
+        .separateEntity(ocspCert != null);
 
     if (ocspCert != null) {
       builder
-        .ocspEntity(CAServiceInfo.OCSPEntityInfo.builder()
-          .dn(ocspCert.getSubject().toString())
-          .keySourceType(keySource.getType().name())
-          .algorithm(ocspConfig.getAlgorithm())
-          .keyInfo(getKeyInfoData(ocspCert))
-          .build()
-        );
+          .ocspEntity(CAServiceInfo.OCSPEntityInfo.builder()
+              .dn(ocspCert.getSubject().toString())
+              .keySourceType(keySource.getType().name())
+              .algorithm(ocspConfig.getAlgorithm())
+              .keyInfo(this.getKeyInfoData(ocspCert))
+              .build());
     }
     return builder.build();
   }
 
-  private CAServiceInfo.KeyInfo getKeyInfoData(X509CertificateHolder ocspCert) {
+  private CAServiceInfo.KeyInfo getKeyInfoData(final X509CertificateHolder ocspCert) {
     int keyLen = -1;
     String keyType = null;
     try {
-      PublicKey publicKey = BouncyCastleProvider.getPublicKey(ocspCert.getSubjectPublicKeyInfo());
+      final PublicKey publicKey = BouncyCastleProvider.getPublicKey(ocspCert.getSubjectPublicKeyInfo());
       keyLen = BasicX509Utils.getKeyLength(publicKey);
-      if (publicKey instanceof ECPublicKey)
+      if (publicKey instanceof ECPublicKey) {
         keyType = "EC";
-      if (publicKey instanceof RSAPublicKey)
+      }
+      if (publicKey instanceof RSAPublicKey) {
         keyType = "RSA";
+      }
       return new CAServiceInfo.KeyInfo(keyType, keyLen);
     }
-    catch (IOException ignored) {
+    catch (final IOException ignored) {
     }
     return null;
   }
 
-  private X509CertificateHolder getOcspCert(String instance) {
+  private X509CertificateHolder getOcspCert(final String instance) {
     try {
-      File instanceDir = getInstanceDir(instance);
-      File certsDir = new File(instanceDir, "certs");
-      File ocspCert = new File(certsDir, "ocsp.crt");
+      final File instanceDir = this.getInstanceDir(instance);
+      final File certsDir = new File(instanceDir, "certs");
+      final File ocspCert = new File(certsDir, "ocsp.crt");
 
       return new JcaX509CertificateHolder(
-        Objects.requireNonNull(
-          BasicX509Utils.getCertOrNull(
-            FileUtils.readFileToByteArray(
-              ocspCert))));
+          Objects.requireNonNull(
+              BasicX509Utils.getCertOrNull(
+                  FileUtils.readFileToByteArray(
+                      ocspCert))));
     }
-    catch (Exception ex) {
+    catch (final Exception ex) {
       return null;
     }
   }
 
-  private List<String> getDnList(String instance) {
+  private List<String> getDnList(final String instance) {
     try {
-      File instanceDir = getInstanceDir(instance);
-      File certsDir = new File(instanceDir, "certs");
-      File chainFile = new File(certsDir, "ca-chain.pem");
+      final File instanceDir = this.getInstanceDir(instance);
+      final File certsDir = new File(instanceDir, "certs");
+      final File chainFile = new File(certsDir, "ca-chain.pem");
       FileUtils.readFileToByteArray(chainFile);
       return BasicX509Utils.getPemObjects(new FileInputStream(chainFile)).stream()
-        .filter(o -> o instanceof X509CertificateHolder)
-        .map(o -> (X509CertificateHolder) o)
-        .map(x509CertificateHolder -> x509CertificateHolder.getSubject().toString())
-        .collect(Collectors.toList());
+          .filter(o -> o instanceof X509CertificateHolder)
+          .map(o -> (X509CertificateHolder) o)
+          .map(x509CertificateHolder -> x509CertificateHolder.getSubject().toString())
+          .collect(Collectors.toList());
     }
-    catch (Exception ex) {
+    catch (final Exception ex) {
       return null;
     }
   }
 
-  private File getInstanceDir(String instance) {
-    CAService caService = caServices.getCAService(instance);
-    File instancesDir = new File(basicServiceConfig.getDataStoreLocation(), "instances");
-    File instanceDir = new File(instancesDir, instance);
+  private File getInstanceDir(final String instance) {
+    this.caServices.getCAService(instance);
+    final File instancesDir = new File(this.basicServiceConfig.getDataStoreLocation(), "instances");
+    final File instanceDir = new File(instancesDir, instance);
     return instanceDir;
   }
 
-  private boolean getBoolean(Boolean booleanObject) {
+  private boolean getBoolean(final Boolean booleanObject) {
     return booleanObject == null ? false : booleanObject;
   }
 

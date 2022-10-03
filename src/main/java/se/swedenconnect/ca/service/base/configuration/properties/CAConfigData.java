@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.properties;
+
+import java.util.Calendar;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.Calendar;
 
 /**
  * CA instance configuration data.
@@ -30,12 +29,15 @@ import java.util.Calendar;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CAConfigData {
+
   /** Indicates if the CA service is enabled */
-  Boolean enabled;
+  private Boolean enabled;
+
   /** Certificate issuance configuration */
-  CaConfig ca;
+  private CaConfig ca;
+
   /** OCSP responder configuration */
-  OCSPConfig ocsp;
+  private OCSPConfig ocsp;
 
   /**
    * Canfiguration for the certificate issuing part of the CA service
@@ -43,48 +45,64 @@ public class CAConfigData {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class CaConfig{
+  public static class CaConfig {
+
     /** CA description */
-    String description;
+    private String description;
+
     /** Type */
-    String type;
+    private String type;
+
     /** Certificate signing algorithm */
-    String algorithm;
+    private String algorithm;
+
     /** Indicates if the CA may issue V1 certificates */
-    Boolean allowV1;
+    private Boolean allowV1;
+
     /** The number of years the initial self issued CA certificate is valid */
-    Integer selfIssuedValidYears;
+    private Integer selfIssuedValidYears;
+
     /** The validity time of any certificates issued to the CAs own OCSP responder */
-    Integer ocspCertValidityAmount;
+    private Integer ocspCertValidityAmount;
+
     /** Validity of issued certificates */
-    ValidityData validity;
+    private ValidityData validity;
+
     /** Validity of issued revocation lists */
-    ValidityData crlValidity;
+    private ValidityData crlValidity;
+
     /** the key source of the CA */
-    KeySourceData keySource;
+    private KeySourceData keySource;
+
     /** The name of the CA */
-    EntityNameProperties name;
+    private EntityNameProperties name;
+
     /** path to a custom storage location for the CA repository data other than the instance data folder */
-    String customCertStorageLocation;
+    private String customCertStorageLocation;
   }
 
   /**
-   * OCSP configuration data
+   * OCSP configuration data.
    */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class OCSPConfig{
+  public static class OCSPConfig {
+
     /** Indicates if the OCSP service is enabled */
-    Boolean enabled;
+    private Boolean enabled;
+
     /** Algorithm used to sign OCSP responses */
-    String algorithm;
+    private String algorithm;
+
     /** Validity of OCSP responses */
-    ValidityData validity;
+    private ValidityData validity;
+
     /** OCSP responder key source */
-    KeySourceData keySource;
+    private KeySourceData keySource;
+
     /** Name of the OCSP responder */
-    EntityNameProperties name;
+    private EntityNameProperties name;
   }
 
   /**
@@ -93,8 +111,11 @@ public class CAConfigData {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class ValidityData{
-    /** the number of seconds the start validity should be adjusted compared to current time (- indicates time in the past) */
+  public static class ValidityData {
+    /**
+     * the number of seconds the start validity should be adjusted compared to current time (- indicates time in the
+     * past)
+     */
     Integer startOffsetSec;
     /** The unit deciding validity time */
     ValidityUnit unit;
@@ -109,13 +130,13 @@ public class CAConfigData {
   @AllArgsConstructor
   public enum ValidityUnit {
     /** Minute */
-    M (Calendar.MINUTE),
+    M(Calendar.MINUTE),
     /** Hour */
-    H (Calendar.HOUR),
+    H(Calendar.HOUR),
     /** Day */
-    D (Calendar.DAY_OF_YEAR),
+    D(Calendar.DAY_OF_YEAR),
     /** Year */
-    Y (Calendar.YEAR);
+    Y(Calendar.YEAR);
 
     /** The {@link Calendar} constant of the time unit */
     private final int unitType;
@@ -155,6 +176,5 @@ public class CAConfigData {
     /** PKCS12 Key store */
     pkcs12
   }
-
 
 }

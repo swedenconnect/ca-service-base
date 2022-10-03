@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
 
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
 import se.swedenconnect.ca.cmc.auth.CMCValidator;
 
 /**
- * This CMC request parser is a simplified CMC request parser that do not implement replay protection.
- * The purpose of this parser is simply to support CMC request parsing to provide information to the audit logger.
+ * This CMC request parser is a simplified CMC request parser that do not implement replay protection. The purpose of
+ * this parser is simply to support CMC request parsing to provide information to the audit logger.
  */
 public class AuditCMCRequestParser extends CMCRequestParser {
 
@@ -30,7 +29,8 @@ public class AuditCMCRequestParser extends CMCRequestParser {
    *
    * @param validator validator for validating CMC requests
    */
-  public AuditCMCRequestParser(CMCValidator validator) {
-    super(validator, cmsSignedData -> {});
+  public AuditCMCRequestParser(final CMCValidator validator) {
+    super(validator, cmsSignedData -> {
+    });
   }
 }

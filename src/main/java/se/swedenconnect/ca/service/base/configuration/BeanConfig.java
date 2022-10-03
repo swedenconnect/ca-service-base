@@ -13,11 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.IOException;
+import java.security.Provider;
+import java.security.Security;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.ServletContextListener;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -33,22 +44,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.io.ResourceLoader;
+
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.service.base.configuration.audit.CAServiceContextListener;
 import se.swedenconnect.ca.service.base.configuration.audit.ExtSyslogMessageSender;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
-
-import javax.servlet.ServletContextListener;
-import java.io.File;
-import java.io.IOException;
-import java.security.Provider;
-import java.security.Security;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Configuration class to provide constructed beans.
@@ -67,8 +68,9 @@ public class BeanConfig implements ApplicationEventPublisherAware {
    */
   @Bean
   ServletListenerRegistrationBean<ServletContextListener> serviceContextListener() {
-    ServletListenerRegistrationBean<ServletContextListener> servletListenerRegistrationBean = new ServletListenerRegistrationBean<>();
-    servletListenerRegistrationBean.setListener(new CAServiceContextListener(applicationEventPublisher));
+    final ServletListenerRegistrationBean<ServletContextListener> servletListenerRegistrationBean =
+        new ServletListenerRegistrationBean<>();
+    servletListenerRegistrationBean.setListener(new CAServiceContextListener(this.applicationEventPublisher));
     return servletListenerRegistrationBean;
   }
 
@@ -80,27 +82,25 @@ public class BeanConfig implements ApplicationEventPublisherAware {
    * @param serviceContextPath context path of the service
    * @return basic service configuration
    */
-  @Bean (name = "BasicServiceConfig")
+  @Bean(name = "BasicServiceConfig")
   BasicServiceConfig basicServiceConfig(
-    @Value("${ca-service.config.data-directory}") String configLocation,
-    @Value("${ca-service.config.base-url}") String serviceBaseUrl,
-    @Value("${server.servlet.context-path:#{null}}") String serviceContextPath
-  ) {
-    Security.insertProviderAt(new BouncyCastleProvider(),1);
+      @Value("${ca-service.config.data-directory}") final String configLocation,
+      @Value("${ca-service.config.base-url}") final String serviceBaseUrl,
+      @Value("${server.servlet.context-path:#{null}}") final String serviceContextPath) {
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
     log.info("Available crypto providers: {}", Arrays.stream(Security.getProviders())
-      .map(Provider::getName)
-      .collect(Collectors.joining(",")));
+        .map(Provider::getName)
+        .collect(Collectors.joining(",")));
     final Provider bcProvider = Security.getProvider("BC");
     log.info("Bouncycastle version: {}", bcProvider.getVersionStr());
     log.info("JRE Path: {}", System.getProperty("java.home"));
 
-    BasicServiceConfig basicServiceConfig = new BasicServiceConfig();
+    final BasicServiceConfig basicServiceConfig = new BasicServiceConfig();
     if (StringUtils.isNotBlank(configLocation)) {
       basicServiceConfig.setDataStoreLocation(new File(
-        configLocation.endsWith("/")
-          ? configLocation.substring(0, configLocation.length() - 1)
-          : configLocation
-      ));
+          configLocation.endsWith("/")
+              ? configLocation.substring(0, configLocation.length() - 1)
+              : configLocation));
     }
     else {
       basicServiceConfig.setDataStoreLocation(new File(System.getProperty("user.dir"), "target/temp/ca-config"));
@@ -109,8 +109,8 @@ public class BeanConfig implements ApplicationEventPublisherAware {
       }
     }
     basicServiceConfig.setServiceUrl(serviceContextPath == null
-      ? serviceBaseUrl
-      : serviceBaseUrl + serviceContextPath);
+        ? serviceBaseUrl
+        : serviceBaseUrl + serviceContextPath);
     basicServiceConfig.setServiceHostUrl(serviceBaseUrl);
     return basicServiceConfig;
   }
@@ -123,14 +123,14 @@ public class BeanConfig implements ApplicationEventPublisherAware {
    */
   @Bean
   PkiCredentialFactory pkiCredentialFactory(
-    @Value("${ca-service.pkcs11.external-config-locations:#{null}}") List<String> hsmExternalCfgLocations) {
+      @Value("${ca-service.pkcs11.external-config-locations:#{null}}") final List<String> hsmExternalCfgLocations) {
 
-    if (hsmExternalCfgLocations != null && hsmExternalCfgLocations.size() != 1){
+    if (hsmExternalCfgLocations != null && hsmExternalCfgLocations.size() != 1) {
       throw new RuntimeException("Only one PKCS11 config file is allowed");
     }
 
-    PkiCredentialFactory pkiCredentialFactory = new PkiCredentialFactory(
-      hsmExternalCfgLocations == null ? null : hsmExternalCfgLocations.get(0));
+    final PkiCredentialFactory pkiCredentialFactory = new PkiCredentialFactory(
+        hsmExternalCfgLocations == null ? null : hsmExternalCfgLocations.get(0));
     pkiCredentialFactory.setMockKeyLen(3072);
     return pkiCredentialFactory;
   }
@@ -144,7 +144,8 @@ public class BeanConfig implements ApplicationEventPublisherAware {
    */
   @Bean
   @DependsOn("syslogMessageSender")
-  AuditEventRepository auditEventRepository(List<ExtSyslogMessageSender> syslogMessageSenderList) throws Exception {
+  AuditEventRepository auditEventRepository(final List<ExtSyslogMessageSender> syslogMessageSenderList)
+      throws Exception {
     if (syslogMessageSenderList.isEmpty()) {
       return new InMemoryAuditEventRepository();
     }
@@ -153,20 +154,20 @@ public class BeanConfig implements ApplicationEventPublisherAware {
       Logger log = LoggerFactory.getLogger(AuditEventRepository.class);
 
       @Override
-      public void add(AuditEvent auditEvent) {
+      public void add(final AuditEvent auditEvent) {
         syslogMessageSenderList.stream().forEach(syslogMessageSender -> {
           try {
             syslogMessageSender.sendMessage(auditEvent);
           }
-          catch (IOException e) {
-            log.error("failed to send audit log to syslog {}", auditEvent.toString());
+          catch (final IOException e) {
+            this.log.error("failed to send audit log to syslog {}", auditEvent.toString());
             e.printStackTrace();
           }
         });
       }
 
       @Override
-      public List<AuditEvent> find(String principal, Instant after, String type) {
+      public List<AuditEvent> find(final String principal, final Instant after, final String type) {
         return new ArrayList<>();
       }
     };
@@ -174,7 +175,8 @@ public class BeanConfig implements ApplicationEventPublisherAware {
   }
 
   /** {@inheritDoc} */
-  @Override public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+  @Override
+  public void setApplicationEventPublisher(final ApplicationEventPublisher applicationEventPublisher) {
     this.applicationEventPublisher = applicationEventPublisher;
   }
 
@@ -189,11 +191,10 @@ public class BeanConfig implements ApplicationEventPublisherAware {
    */
   @Bean
   Map<String, EmbeddedLogo> logoMap(
-    ResourceLoader resourceLoader,
-    @Value("${ca-service.config.logo:#{null}}")String logoLocation,
-    @Value("${ca-service.config.icon:#{null}}")String iconLocation
-  ) throws Exception {
-    Map<String, EmbeddedLogo> logoMap = new HashMap<>();
+      final ResourceLoader resourceLoader,
+      @Value("${ca-service.config.logo:#{null}}") final String logoLocation,
+      @Value("${ca-service.config.icon:#{null}}") final String iconLocation) throws Exception {
+    final Map<String, EmbeddedLogo> logoMap = new HashMap<>();
     if (StringUtils.isNotBlank(logoLocation)) {
       logoMap.put("logo", new EmbeddedLogo(logoLocation, resourceLoader));
     }

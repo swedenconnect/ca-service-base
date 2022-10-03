@@ -26,26 +26,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConfigInfoContributor implements InfoContributor {
 
+  private final ServiceInfo serviceInfo;
 
-    private ServiceInfo serviceInfo;
+  /**
+   * Constructor
+   *
+   * @param serviceInfo service information
+   */
+  @Autowired
+  public ConfigInfoContributor(final ServiceInfo serviceInfo) {
+    this.serviceInfo = serviceInfo;
+  }
 
-    /**
-     * Constructor
-     *
-     * @param serviceInfo service information
-     */
-    @Autowired
-    public ConfigInfoContributor(ServiceInfo serviceInfo) {
-        this.serviceInfo = serviceInfo;
-    }
-
-    /**
-     * Adds the policy configuration to the information released by the Spring Boot actuator info-endpoint.
-     *
-     * @param builder service information builder
-     */
-    @Override
-    public void contribute(Builder builder) {
-        builder.withDetail("CA-service-information", serviceInfo.getCaServiceInfo());
-    }
+  /**
+   * Adds the policy configuration to the information released by the Spring Boot actuator info-endpoint.
+   *
+   * @param builder service information builder
+   */
+  @Override
+  public void contribute(final Builder builder) {
+    builder.withDetail("CA-service-information", this.serviceInfo.getCaServiceInfo());
+  }
 }

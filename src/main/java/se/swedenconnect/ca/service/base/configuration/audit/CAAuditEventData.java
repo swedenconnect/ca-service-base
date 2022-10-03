@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
+
+import java.math.BigInteger;
+import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigInteger;
-import java.util.Date;
 
 /**
  * Data at CA service audit events.
@@ -35,39 +34,49 @@ public class CAAuditEventData {
 
   /** CA instance */
   private String caInstance;
+
   /** The certificate being issued */
   private String issuedCertificate;
+
   /** Certificate serial number */
   private BigInteger certSerialNumber;
+
   /** Certificate subject */
   private String subject;
+
   /** Revocation time */
   private Date revocationTime;
+
   /** Revocation reason */
   private Integer reason;
+
   /** CRL number */
   private BigInteger crlNumber;
+
   /** Exception recorded at event */
   private Exception exception;
 
   /**
-   * Event data for certificate request
+   * Event data for certificate request.
+   *
    * @param caInstance CA instance
    * @param subject subject for the certificate request
    */
-  public CAAuditEventData(String caInstance, String subject) {
+  public CAAuditEventData(final String caInstance, final String subject) {
     this.caInstance = caInstance;
     this.subject = subject;
   }
 
   /**
-   * Event data for issued certificates
+   * Event data for issued certificates.
+   *
    * @param caInstance CA instance
    * @param issuedCertificate the base64 encoded issued certificate
    * @param certSerialNumber the certificate serial number
    * @param subject the subject name of the certificate
    */
-  public CAAuditEventData(String caInstance, String issuedCertificate, BigInteger certSerialNumber, String subject) {
+  public CAAuditEventData(final String caInstance, final String issuedCertificate,
+      final BigInteger certSerialNumber, final String subject) {
     this.caInstance = caInstance;
     this.issuedCertificate = issuedCertificate;
     this.certSerialNumber = certSerialNumber;
@@ -75,14 +84,16 @@ public class CAAuditEventData {
   }
 
   /**
-   * Event data for certificate revocation
+   * Event data for certificate revocation.
+   *
    * @param caInstance CA instance
    * @param certSerialNumber certificate serial number
    * @param revocationTime revocation time
    * @param reason revocation reason
    * @param subject The subject of the certificate
    */
-  public CAAuditEventData(String caInstance, BigInteger certSerialNumber, Date revocationTime, Integer reason, String subject) {
+  public CAAuditEventData(final String caInstance, final BigInteger certSerialNumber, final Date revocationTime,
+      final Integer reason, final String subject) {
     this.caInstance = caInstance;
     this.certSerialNumber = certSerialNumber;
     this.revocationTime = revocationTime;
@@ -91,11 +102,12 @@ public class CAAuditEventData {
   }
 
   /**
-   * Event data for new CRL publication
+   * Event data for new CRL publication.
+   *
    * @param caInstance CA instance identifier
    * @param crlNumber CRL number
    */
-  public CAAuditEventData(String caInstance, BigInteger crlNumber) {
+  public CAAuditEventData(final String caInstance, final BigInteger crlNumber) {
     this.caInstance = caInstance;
     this.crlNumber = crlNumber;
   }

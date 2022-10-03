@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.properties;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuration properties for default name of configured CA services.
@@ -32,15 +32,20 @@ public class EntityNameProperties {
 
   /** Country name 2-letter ISO 3166 country code. */
   private String country;
+
   /** Organization name. */
   private String org;
+
   /** Organization unit name */
   private String orgUnit;
+
   /** Organization identifier */
   private String orgIdentifier;
+
   /** Serial number attribute value carrying the organization identifier */
   private String serialNumber;
+
   /** Common name of the CA */
   private String commonName;
-}
 
+}

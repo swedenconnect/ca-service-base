@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.ca;
 
-import se.swedenconnect.ca.engine.ca.issuer.CAService;
-
 import java.util.List;
+
+import se.swedenconnect.ca.engine.ca.issuer.CAService;
 
 /**
  * Interface for implementing a bean that constructs and provides CA services based on current configuration data.
@@ -34,23 +33,26 @@ public interface CAServices {
 
   /**
    * Test if the CA service is initialized and ready for use
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return true if the CA service is initialized, otherwise false
    */
-  boolean isServiceInitialized(String instance);
+  boolean isServiceInitialized(final String instance);
 
   /**
    * Test if the CA service is enabled or disabled for certificate issuance by configuration
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return true if the CA service is enabled
    */
-  boolean isServiceEnabled(String instance);
+  boolean isServiceEnabled(final String instance);
 
   /**
    * Getter for a CA service for a specified key
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return CA service instance or null if no CA service match the specified instance name
    */
-  CAService getCAService(String instance);
+  CAService getCAService(final String instance);
 
 }

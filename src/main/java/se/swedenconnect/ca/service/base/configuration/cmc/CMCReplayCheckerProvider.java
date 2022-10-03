@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.cmc;
 
 import se.swedenconnect.ca.cmc.auth.CMCReplayChecker;
@@ -29,6 +28,6 @@ public interface CMCReplayCheckerProvider {
    * @param instance CA instance
    * @return CMC replay checker
    */
-  CMCReplayChecker getCMCReplayChecker(String instance);
+  CMCReplayChecker getCMCReplayChecker(final String instance);
 
 }

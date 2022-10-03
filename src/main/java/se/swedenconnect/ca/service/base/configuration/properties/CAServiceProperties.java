@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.properties;
 
-import lombok.Data;
-import lombok.ToString;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Map;
+import lombok.Data;
+import lombok.ToString;
 
 /**
  * CA service configuration properties.
@@ -32,7 +32,7 @@ import java.util.Map;
 @ToString
 public class CAServiceProperties {
 
-  /** Configuration data map for instances of a CA */
-  Map<String, CAConfigData> conf;
+  /** Configuration data map for instances of a CA. */
+  private Map<String, CAConfigData> conf;
 
 }

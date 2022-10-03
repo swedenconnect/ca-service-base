@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.keys;
 
 import java.security.PublicKey;
@@ -24,10 +23,11 @@ import java.security.PublicKey;
 public interface PublicKeyValidator {
 
   /**
-   * Evaluate a public key to determine that it meets the defined security policy
+   * Evaluate a public key to determine that it meets the defined security policy.
+   *
    * @param publicKey public key to validate
    * @throws PublicKeyPolicyException if the public key is not valid
    */
-  void validatePublicKey(PublicKey publicKey) throws PublicKeyPolicyException;
+  void validatePublicKey(final PublicKey publicKey) throws PublicKeyPolicyException;
 
 }

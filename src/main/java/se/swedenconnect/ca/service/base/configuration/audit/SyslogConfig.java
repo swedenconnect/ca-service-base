@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import se.swedenconnect.ca.service.base.configuration.properties.SyslogConfigProperties;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import se.swedenconnect.ca.service.base.configuration.properties.SyslogConfigProperties;
 
 /**
  * Syslog message sender bean configuration.
@@ -32,22 +32,22 @@ import java.util.stream.Collectors;
 @Configuration
 public class SyslogConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(SyslogConfig.class);
+  private static final Logger log = LoggerFactory.getLogger(SyslogConfig.class);
 
-    @Bean(name = "syslogMessageSender")
-    List<ExtSyslogMessageSender> syslogMessageSenderList(SyslogConfigProperties syslogConfigProperties) {
-        List<SyslogConfigProperties.SyslogConfigData> syslogConfigList = syslogConfigProperties.getConfig();
-        if (!syslogConfigProperties.isEnabled()) {
-            log.info("No syslog server is configured. Logging to in memory audit log");
-            return new ArrayList<>();
-        }
-        if (syslogConfigList.isEmpty()){
-            throw new IllegalArgumentException("Syslog is configured, but no valid syslog configuration data is available");
-        }
-
-        return syslogConfigList.stream()
-                .map(ExtSyslogMessageSender::new)
-                .collect(Collectors.toList());
+  @Bean(name = "syslogMessageSender")
+  List<ExtSyslogMessageSender> syslogMessageSenderList(final SyslogConfigProperties syslogConfigProperties) {
+    final List<SyslogConfigProperties.SyslogConfigData> syslogConfigList = syslogConfigProperties.getConfig();
+    if (!syslogConfigProperties.isEnabled()) {
+      log.info("No syslog server is configured. Logging to in memory audit log");
+      return new ArrayList<>();
     }
+    if (syslogConfigList.isEmpty()) {
+      throw new IllegalArgumentException("Syslog is configured, but no valid syslog configuration data is available");
+    }
+
+    return syslogConfigList.stream()
+        .map(ExtSyslogMessageSender::new)
+        .collect(Collectors.toList());
+  }
 
 }

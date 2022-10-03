@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.ca.impl;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.util.List;
+
+import org.bouncycastle.cert.X509CertificateHolder;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bouncycastle.cert.X509CertificateHolder;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuer;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.issuer.impl.AbstractCAService;
@@ -31,36 +36,35 @@ import se.swedenconnect.ca.engine.revocation.crl.impl.DefaultCRLIssuer;
 import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
 import se.swedenconnect.security.credential.PkiCredential;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.util.List;
-
 /**
  * Abstract basic implementation of a CA based on the core CA ca-engine module.
  *
- * This forms a basic model for providing a complete CA that includes a CA repository,
- * a CRL issuer and optionally an OCSP responder.
+ * This forms a basic model for providing a complete CA that includes a CA repository, a CRL issuer and optionally an
+ * OCSP responder.
  */
 public abstract class AbstractBasicCA extends AbstractCAService<DefaultCertificateModelBuilder> {
 
   /** The issuer functionality used to produce new certificates by the CA service */
-  @Getter protected CertificateIssuer certificateIssuer;
+  protected CertificateIssuer certificateIssuer;
 
   /** The CRL issuer used to issue CRL */
   protected CRLIssuer crlIssuer;
 
   /** The OCSP responder used to produce OCSP responses */
-  @Setter protected OCSPResponder ocspResponder;
+  @Setter
+  protected OCSPResponder ocspResponder;
 
   /** The certificate for the OCSP response validation key */
-  @Setter protected X509CertificateHolder ocspCertificate;
+  @Setter
+  protected X509CertificateHolder ocspCertificate;
 
   /** List of CRL distribution points included in issued certificates */
-  @Getter protected final List<String> crlDistributionPoints;
+  @Getter
+  protected final List<String> crlDistributionPoints;
 
   /** The URL used to send OCSP requests to the OCSP responder in order to get an OCSP responder */
-  @Setter @Getter protected String ocspResponderUrl;
+  @Setter
+  protected String ocspResponderUrl;
 
   /**
    * Constructor for the abstract basic CA service.
@@ -74,16 +78,17 @@ public abstract class AbstractBasicCA extends AbstractCAService<DefaultCertifica
    * @throws IOException error parsing input or output data
    * @throws CertificateEncodingException error processing certificate data
    */
-  public AbstractBasicCA(PkiCredential issuerCredential, CARepository caRepository,
-    CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+  public AbstractBasicCA(final PkiCredential issuerCredential, final CARepository caRepository,
+      final CertificateIssuerModel certIssuerModel, final CRLIssuerModel crlIssuerModel,
+      final List<String> crlDistributionPoints)
+      throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     super(issuerCredential, caRepository);
     this.certificateIssuer = new BasicCertificateIssuer(certIssuerModel, issuerCredential);
     if (crlIssuerModel != null) {
       this.crlIssuer = new DefaultCRLIssuer(crlIssuerModel, issuerCredential);
       // Make sure that at least one CRL is published
-      if (getCurrentCrl() == null) {
-        publishNewCrl();
+      if (this.getCurrentCrl() == null) {
+        this.publishNewCrl();
       }
     }
     this.crlDistributionPoints = crlDistributionPoints;
@@ -92,43 +97,43 @@ public abstract class AbstractBasicCA extends AbstractCAService<DefaultCertifica
   /** {@inheritDoc} */
   @Override
   public CertificateIssuer getCertificateIssuer() {
-    return certificateIssuer;
+    return this.certificateIssuer;
   }
 
   /** {@inheritDoc} */
   @Override
   protected CRLIssuer getCrlIssuer() {
-    return crlIssuer;
+    return this.crlIssuer;
   }
 
   /** {@inheritDoc} */
   @Override
   public OCSPResponder getOCSPResponder() {
-    return ocspResponder;
+    return this.ocspResponder;
   }
 
   /** {@inheritDoc} */
   @Override
   public X509CertificateHolder getOCSPResponderCertificate() {
-    return ocspCertificate;
+    return this.ocspCertificate;
   }
 
   /** {@inheritDoc} */
   @Override
   public String getCaAlgorithm() {
-    return certificateIssuer.getCertificateIssuerModel().getAlgorithm();
+    return this.certificateIssuer.getCertificateIssuerModel().getAlgorithm();
   }
 
   /** {@inheritDoc} */
   @Override
   public List<String> getCrlDpURLs() {
-    return crlDistributionPoints;
+    return this.crlDistributionPoints;
   }
 
   /** {@inheritDoc} */
   @Override
   public String getOCSPResponderURL() {
-    return ocspResponderUrl;
+    return this.ocspResponderUrl;
   }
 
 }

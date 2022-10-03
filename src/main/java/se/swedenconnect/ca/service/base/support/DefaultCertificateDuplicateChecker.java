@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.support;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.security.cert.X509Certificate;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The default processor for handling equivalent certificates.
@@ -27,12 +26,15 @@ import java.security.cert.X509Certificate;
 public class DefaultCertificateDuplicateChecker extends AbstractCertificateDuplicateChecker {
 
   /** {@inheritDoc} */
-  @Override protected X509Certificate getPreferredEquivalentCert(X509Certificate firstCertificate, X509Certificate otherCertificate) {
+  @Override
+  protected X509Certificate getPreferredEquivalentCert(final X509Certificate firstCertificate,
+      final X509Certificate otherCertificate) {
 
     // If both certs are identical, just return the first certificate
-    if (firstCertificate.equals(otherCertificate)){
-      if (log.isDebugEnabled()){
-        log.trace("Identical certificates. Removing certificate duplicate for {}", otherCertificate.getSubjectX500Principal());
+    if (firstCertificate.equals(otherCertificate)) {
+      if (log.isDebugEnabled()) {
+        log.trace("Identical certificates. Removing certificate duplicate for {}",
+            otherCertificate.getSubjectX500Principal());
       }
       return firstCertificate;
     }
@@ -51,7 +53,7 @@ public class DefaultCertificateDuplicateChecker extends AbstractCertificateDupli
     // Log the result
     if (log.isTraceEnabled()) {
       log.trace("Keeping cert issued {} and removing cert issued {} for {}",
-        selectedCert.getNotBefore(), droppedCert.getNotBefore(), selectedCert.getSubjectX500Principal());
+          selectedCert.getNotBefore(), droppedCert.getNotBefore(), selectedCert.getSubjectX500Principal());
     }
     return selectedCert;
   }

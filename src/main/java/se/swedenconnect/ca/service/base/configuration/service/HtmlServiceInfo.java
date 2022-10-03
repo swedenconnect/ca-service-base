@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.service;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * Configuration info for service information used in HTML pages.
@@ -32,10 +32,13 @@ public class HtmlServiceInfo {
 
   /** Title heading of the service home page */
   private String homePageTitle;
+
   /** The prefix of the title of all HTML pages - A suitable suffix is specified in each HTML page */
   private String htmlTitlePrefix;
+
   /** The description meta tag content of HTML pages */
   private String htmlDescription;
+
   /** The Author meta tag of HTML pages */
   private String htmlAuthor;
 

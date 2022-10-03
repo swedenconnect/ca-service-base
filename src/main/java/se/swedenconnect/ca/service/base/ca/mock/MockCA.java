@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.ca.mock;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.util.List;
 
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
+
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.models.cert.CertNameModel;
@@ -28,12 +34,6 @@ import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
 import se.swedenconnect.security.credential.PkiCredential;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.cert.CertificateEncodingException;
-import java.util.List;
 
 /**
  * This is a Mock test implementation of a Basic CA used in the MocRepoCAServices.
@@ -52,29 +52,31 @@ public class MockCA extends AbstractBasicCA {
    * @throws IOException generic data parsing errors
    * @throws CertificateEncodingException certificate encoding errors
    */
-  public MockCA(PkiCredential issuerCredential,
-    CARepository caRepository, CertificateIssuerModel certIssuerModel,
-    CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+  public MockCA(final PkiCredential issuerCredential,
+      final CARepository caRepository, final CertificateIssuerModel certIssuerModel,
+      final CRLIssuerModel crlIssuerModel, final List<String> crlDistributionPoints)
+      throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     super(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected DefaultCertificateModelBuilder getBaseCertificateModelBuilder(CertNameModel subject, PublicKey publicKey,
-    X509CertificateHolder issuerCertificate, CertificateIssuerModel certificateIssuerModel) throws CertificateIssuanceException {
-    DefaultCertificateModelBuilder certModelBuilder = DefaultCertificateModelBuilder.getInstance(publicKey, getCaCertificate(),
-      certificateIssuerModel);
+  protected DefaultCertificateModelBuilder getBaseCertificateModelBuilder(final CertNameModel<?> subject,
+      final PublicKey publicKey, final X509CertificateHolder issuerCertificate,
+      final CertificateIssuerModel certificateIssuerModel) throws CertificateIssuanceException {
+    final DefaultCertificateModelBuilder certModelBuilder =
+        DefaultCertificateModelBuilder.getInstance(publicKey, this.getCaCertificate(),
+            certificateIssuerModel);
     certModelBuilder
-      .subject(subject)
-      .includeAki(true)
-      .includeSki(true)
-      .basicConstraints(new BasicConstraintsModel(false, false))
-      .keyUsage(new KeyUsageModel(KeyUsage.digitalSignature))
-      .crlDistributionPoints(crlDistributionPoints.isEmpty() ? null : crlDistributionPoints);
+        .subject(subject)
+        .includeAki(true)
+        .includeSki(true)
+        .basicConstraints(new BasicConstraintsModel(false, false))
+        .keyUsage(new KeyUsageModel(KeyUsage.digitalSignature))
+        .crlDistributionPoints(this.crlDistributionPoints.isEmpty() ? null : this.crlDistributionPoints);
 
-    if (ocspResponderUrl != null) {
-      certModelBuilder.ocspServiceUrl(ocspResponderUrl);
+    if (this.ocspResponderUrl != null) {
+      certModelBuilder.ocspServiceUrl(this.ocspResponderUrl);
     }
 
     return certModelBuilder;

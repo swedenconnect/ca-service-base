@@ -13,17 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.utils;
-
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.openssl.PEMParser;
-import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
-import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,6 +27,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.openssl.PEMParser;
+
+import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
+import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
 /**
  * General static CA service utilities.
@@ -52,15 +52,17 @@ public class GeneralCAUtils {
    * @throws IOException error parsing data
    * @throws CertificateEncodingException error encoding certificates
    */
-  public static X509CertificateHolder getOcspCert(File configFolder, String instance) throws IOException, CertificateEncodingException {
-    File certDir = new File(configFolder , "instances/"+ instance+"/certs");
-    if (certDir.exists()){
-      Optional<File> ocspCertFile = Arrays.stream(certDir.listFiles((dir, name) -> name.endsWith("ocsp.crt"))).findFirst();
+  public static X509CertificateHolder getOcspCert(final File configFolder, final String instance)
+      throws IOException, CertificateEncodingException {
+    final File certDir = new File(configFolder, "instances/" + instance + "/certs");
+    if (certDir.exists()) {
+      final Optional<File> ocspCertFile =
+          Arrays.stream(certDir.listFiles((dir, name) -> name.endsWith("ocsp.crt"))).findFirst();
       if (ocspCertFile.isPresent()) {
-        X509CertificateHolder ocspIssuerCert = new JcaX509CertificateHolder(
-          Objects.requireNonNull(
-            BasicX509Utils.getCertOrNull(
-              FileUtils.readFileToByteArray(ocspCertFile.get()))));
+        final X509CertificateHolder ocspIssuerCert = new JcaX509CertificateHolder(
+            Objects.requireNonNull(
+                BasicX509Utils.getCertOrNull(
+                    FileUtils.readFileToByteArray(ocspCertFile.get()))));
         return ocspIssuerCert;
       }
     }
@@ -73,33 +75,35 @@ public class GeneralCAUtils {
    * @param cert certificate to check
    * @return true if the input data is match the requirements of an OCSP responder certificate
    */
-  public static boolean isOCSPCert(X509CertificateHolder cert) {
+  public static boolean isOCSPCert(final X509CertificateHolder cert) {
     try {
       return ExtendedKeyUsage.fromExtensions(cert.getExtensions()).hasKeyPurposeId(KeyPurposeId.id_kp_OCSPSigning);
     }
-    catch (Exception ignored) {
+    catch (final Exception ignored) {
     }
     return false;
   }
 
   /**
-   * Retrieve a list of PEM objects found in the provided input stream that are of the types PrivateKey (Encrypted or Plaintext), KeyPair or certificate
+   * Retrieve a list of PEM objects found in the provided input stream that are of the types PrivateKey (Encrypted or
+   * Plaintext), KeyPair or certificate
    *
    * @param file the resource file holding certificate data
    * @return list of present certificates
    * @throws IOException on error decoding the data in the specified file
    */
-  public static List<X509CertificateHolder> getPEMCertsFromFile(File file) throws IOException {
-    List<X509CertificateHolder> pemObjList = new ArrayList<>();
-    Reader rdr = new BufferedReader(new FileReader(file));
-    PEMParser parser = new PEMParser(rdr);
-    Object o;
-    while ((o = parser.readObject()) != null) {
-      if (o instanceof X509CertificateHolder) {
-        pemObjList.add((X509CertificateHolder) o);
+  public static List<X509CertificateHolder> getPEMCertsFromFile(final File file) throws IOException {
+    final List<X509CertificateHolder> pemObjList = new ArrayList<>();
+    final Reader rdr = new BufferedReader(new FileReader(file));
+    try (final PEMParser parser = new PEMParser(rdr)) {
+      Object o;
+      while ((o = parser.readObject()) != null) {
+        if (o instanceof X509CertificateHolder) {
+          pemObjList.add((X509CertificateHolder) o);
+        }
       }
+      return pemObjList;
     }
-    return pemObjList;
   }
 
   /**
@@ -108,8 +112,8 @@ public class GeneralCAUtils {
    * @param filename the absolute path of the file name or resource
    * @return the first file in the directory that match the suffix or null if absent
    */
-  public static File locateFileOrResource(String filename) {
-    if (filename.startsWith("classpath:")){
+  public static File locateFileOrResource(final String filename) {
+    if (filename.startsWith("classpath:")) {
       return new File(GeneralCAUtils.class.getResource("/" + filename.substring(10)).getFile());
     }
     return new File(filename);
@@ -122,7 +126,7 @@ public class GeneralCAUtils {
    * @param amount amount of time units
    * @return The duration value corresponding to the input values
    */
-  public static Duration getDurationFromTypeAndValue(CAConfigData.ValidityUnit unit, Integer amount) {
+  public static Duration getDurationFromTypeAndValue(final CAConfigData.ValidityUnit unit, final Integer amount) {
     switch (unit) {
     case M:
       return Duration.ofMinutes(amount);
@@ -131,12 +135,11 @@ public class GeneralCAUtils {
     case D:
       return Duration.ofDays(amount);
     case Y:
-      int days = ((amount * 1461) / 4);
+      final int days = amount * 1461 / 4;
       return Duration.ofDays(days);
     default:
       return Duration.ofMillis(amount);
     }
   }
-
 
 }

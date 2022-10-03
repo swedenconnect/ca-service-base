@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.ca.mock;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.util.List;
+import java.util.Map;
+
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
@@ -33,23 +38,17 @@ import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.security.credential.PkiCredential;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.util.List;
-import java.util.Map;
-
 /**
- * This is an implementation of the CA Services bean that use a mockup
- * implementation of the CA repository purely based on storing CA repository
- * data in a local json file. This implementation is intended for test and evaluation
- * purposes only and SHOULD NOT be used in production.
+ * This is an implementation of the CA Services bean that use a mockup implementation of the CA repository purely based
+ * on storing CA repository data in a local json file. This implementation is intended for test and evaluation purposes
+ * only and SHOULD NOT be used in production.
  *
- * <p>It is highly recommended for production environments to implement a CA repository
- * based an a real database implementation with appropriate management of backup and protection
-  * against conflicts and simultaneous storage and/or revocation requests.</p>
+ * <p>
+ * It is highly recommended for production environments to implement a CA repository based an a real database
+ * implementation with appropriate management of backup and protection against conflicts and simultaneous storage and/or
+ * revocation requests.
+ * </p>
  */
-@Slf4j
 public class MockRepoCAServices extends AbstractDefaultCAServices {
 
   /**
@@ -62,33 +61,39 @@ public class MockRepoCAServices extends AbstractDefaultCAServices {
    * @param applicationEventPublisher event publisher for audit logging
    */
   @Autowired
-  public MockRepoCAServices(InstanceConfiguration instanceConfiguration,
-    PkiCredentialFactory pkiCredentialFactory, BasicServiceConfig basicServiceConfig, Map<String,
-    CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher) {
+  public MockRepoCAServices(final InstanceConfiguration instanceConfiguration,
+      final PkiCredentialFactory pkiCredentialFactory, final BasicServiceConfig basicServiceConfig,
+      final Map<String, CARepository> caRepositoryMap, final ApplicationEventPublisher applicationEventPublisher) {
     super(instanceConfiguration, pkiCredentialFactory, basicServiceConfig, caRepositoryMap, applicationEventPublisher);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
-    CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+  protected AbstractBasicCA getBasicCaService(final String instance, final String type,
+      final PkiCredential issuerCredential,
+      final CARepository caRepository, final CertificateIssuerModel certIssuerModel,
+      final CRLIssuerModel crlIssuerModel,
+      final List<String> crlDistributionPoints)
+      throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     // Returning the same Basic CA service for any instance;
     return new MockCA(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void customizeOcspCertificateModel(DefaultCertificateModelBuilder certModelBuilder, String instance) {
+  protected void customizeOcspCertificateModel(final DefaultCertificateModelBuilder certModelBuilder,
+      final String instance) {
     // We don't add any custom content of OCSP service certificates
   }
 
   /** {@inheritDoc} */
   @Override
-  protected X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
-    throws NoSuchAlgorithmException, CertificateIssuanceException {
+  protected X509CertificateHolder generateSelfIssuedCaCert(final PkiCredential caKeySource,
+      final CAConfigData caConfigData,
+      final String instance, final String baseUrl)
+      throws NoSuchAlgorithmException, CertificateIssuanceException {
     // Use the default self issued certificate implementation provided by the abstract class
-    return defaultGenerateSelfIssuedCaCert(caKeySource, caConfigData);
+    return this.defaultGenerateSelfIssuedCaCert(caKeySource, caConfigData);
   }
 
 }
