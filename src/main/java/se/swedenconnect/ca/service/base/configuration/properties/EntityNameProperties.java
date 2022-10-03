@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.properties;
 
-import lombok.Data;
-import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.Data;
+import lombok.ToString;
+
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Configuration properties for default name of configured CA services.
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.default-name")
 @Data
 @ToString
 public class EntityNameProperties {
-  String country;
-  String org;
-  String orgUnit;
-  String orgIdentifier;
-  String serialNumber;
-  String commonName;
-}
 
+  /** Country name 2-letter ISO 3166 country code. */
+  private String country;
+
+  /** Organization name. */
+  private String org;
+
+  /** Organization unit name */
+  private String orgUnit;
+
+  /** Organization identifier */
+  private String orgIdentifier;
+
+  /** Serial number attribute value carrying the organization identifier */
+  private String serialNumber;
+
+  /** Common name of the CA */
+  private String commonName;
+
+}

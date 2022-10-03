@@ -1,22 +1,36 @@
+/*
+ * Copyright 2022 Sweden Connect
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package se.swedenconnect.ca.service.base.configuration.audit;
 
-import org.bouncycastle.cms.CMSSignedData;
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
-import se.swedenconnect.ca.cmc.auth.CMCReplayChecker;
 import se.swedenconnect.ca.cmc.auth.CMCValidator;
 
-import java.io.IOException;
-
 /**
- * Description this CMC request parser is a simplified CMC request parser that do not implement replay protection
- * The purpose of this parser is simply to support CMC request parsing to provide information to the audit logger
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * This CMC request parser is a simplified CMC request parser that do not implement replay protection. The purpose of
+ * this parser is simply to support CMC request parsing to provide information to the audit logger.
  */
 public class AuditCMCRequestParser extends CMCRequestParser {
 
-  public AuditCMCRequestParser(CMCValidator validator) {
-    super(validator, cmsSignedData -> {});
+  /**
+   * Constructor.
+   *
+   * @param validator validator for validating CMC requests
+   */
+  public AuditCMCRequestParser(final CMCValidator validator) {
+    super(validator, cmsSignedData -> {
+    });
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.cmc;
 
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
+
 /**
- * This component enforce configured port restrictions on the admin UI to ensure that the UI is only available in accordance with set
- * policy.
+ * This component enforces configured port restrictions on the admin UI to ensure that the UI is only available in
+ * accordance with set policy.
  *
- * This class typically enforces service port only, but may also implement other controls such as IP address whitelisting etc.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * This class typically enforces service port only, but may also implement other controls such as IP address
+ * whitelisting etc.
  */
 @Component
 @Slf4j
@@ -42,27 +39,39 @@ public class CMCPortConstraints {
 
   private final CMCConfigProperties cmcConfigProperties;
 
+  /**
+   * Constructor for CMC constraints.
+   *
+   * @param cmcConfigProperties configuration properties for CMC support
+   */
   @Autowired
-  public CMCPortConstraints(CMCConfigProperties cmcConfigProperties) {
+  public CMCPortConstraints(final CMCConfigProperties cmcConfigProperties) {
     this.cmcConfigProperties = cmcConfigProperties;
     final List<Integer> cmcPorts = cmcConfigProperties.getPort();
-    if (cmcPorts == null){
+    if (cmcPorts == null) {
       log.info("No CMC port constraints configured. Accepting CMC requests on any port");
-    } else {
+    }
+    else {
       log.info("CMC port constraints configured to restrict CMC requests to the ports: {}",
-        cmcPorts.stream().map(String::valueOf).collect(Collectors.joining(",")));
+          cmcPorts.stream().map(String::valueOf).collect(Collectors.joining(",")));
     }
   }
 
-  public void validateRequestPort(HttpServletRequest request) throws IOException {
-    final List<Integer> cmcPorts = cmcConfigProperties.getPort();
+  /**
+   * Validates that the port of a CMC request is valid and authorized.
+   *
+   * @param request servlet request containing a CMC request
+   * @throws IOException if the request is not supported and authorized
+   */
+  public void validateRequestPort(final HttpServletRequest request) throws IOException {
+    final List<Integer> cmcPorts = this.cmcConfigProperties.getPort();
     if (cmcPorts == null) {
       log.trace("No CMC ports constraints configured. Allow any port");
       return;
     }
-    int localPort = request.getLocalPort();
-    for (int allowedPort : cmcPorts){
-      if (localPort == allowedPort){
+    final int localPort = request.getLocalPort();
+    for (final int allowedPort : cmcPorts) {
+      if (localPort == allowedPort) {
         log.trace("UI request to enabled port {}", localPort);
         return;
       }

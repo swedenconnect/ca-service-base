@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,50 +13,108 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.health;
-
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Exception thrown on health warnings at service health checks.
  */
-public class ServiceHealthWarningException extends RuntimeException{
+public class ServiceHealthWarningException extends RuntimeException {
 
-  @Getter @Setter private Map<String, Object> details = new HashMap<>();
+  private static final long serialVersionUID = 5029369255046012634L;
 
+  /** Service health exception details */
+  @Getter
+  @Setter
+  private Map<String, Object> details = new HashMap<>();
+
+  /**
+   * Constructs a new ServiceHealthWarningException with {@code null} as its detail message. The cause is not
+   * initialized, and may subsequently be initialized by a call to {@link #initCause}.
+   */
   public ServiceHealthWarningException() {
   }
 
-  public ServiceHealthWarningException(String message) {
+  /**
+   * Constructs a new ServiceHealthWarningException with the specified detail message. The cause is not initialized, and
+   * may subsequently be initialized by a call to {@link #initCause}.
+   *
+   * @param message the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+   *          method.
+   */
+  public ServiceHealthWarningException(final String message) {
     super(message);
   }
 
-  public ServiceHealthWarningException(String message, Map<String, Object> details) {
+  /**
+   * Constructs a new ServiceHealthWarningException with the specified detail message and health report details. The
+   * cause is not initialized, and may subsequently be initialized by a call to {@link #initCause}.
+   *
+   * @param message the detail message. The detail message is saved for
+   * @param details details to be provided to the health report later retrieval by the {@link #getMessage()} method.
+   */
+  public ServiceHealthWarningException(final String message, final Map<String, Object> details) {
     super(message);
     this.details = details;
   }
 
-  public ServiceHealthWarningException(String message, Throwable cause) {
+  /**
+   * Constructs a new ServiceHealthWarningException with the specified detail message and cause.
+   * <p>
+   * Note that the detail message associated with {@code cause} is <i>not</i> automatically incorporated in this runtime
+   * exception's detail message.
+   *
+   * @param message the detail message (which is saved for later retrieval by the {@link #getMessage()} method).
+   * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method). (A {@code null}
+   *          value is permitted, and indicates that the cause is nonexistent or unknown.)
+   * @since 1.4
+   */
+  public ServiceHealthWarningException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
-  public ServiceHealthWarningException(Throwable cause) {
+  /**
+   * Constructs a new ServiceHealthWarningException with the specified cause and a detail message of
+   * {@code (cause==null ? null : cause.toString())} (which typically contains the class and detail message of
+   * {@code cause}). This constructor is useful for runtime exceptions that are little more than wrappers for other
+   * throwables.
+   *
+   * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method). (A {@code null}
+   *          value is permitted, and indicates that the cause is nonexistent or unknown.)
+   * @since 1.4
+   */
+  public ServiceHealthWarningException(final Throwable cause) {
     super(cause);
   }
 
-  public ServiceHealthWarningException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  /**
+   * Constructs a new ServiceHealthWarningException with the specified detail message, cause, suppression enabled or
+   * disabled, and writable stack trace enabled or disabled.
+   *
+   * @param message the detail message.
+   * @param cause the cause. (A {@code null} value is permitted, and indicates that the cause is nonexistent or
+   *          unknown.)
+   * @param enableSuppression whether or not suppression is enabled or disabled
+   * @param writableStackTrace whether or not the stack trace should be writable
+   * @since 1.7
+   */
+  public ServiceHealthWarningException(final String message, final Throwable cause, final boolean enableSuppression,
+      final boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 
-  public void addDetail(String key, Object value){
-    details.put(key, value);
+  /**
+   * Add health report details to the exception
+   *
+   * @param key identifier for the details data
+   * @param value details data
+   */
+  public void addDetail(final String key, final Object value) {
+    this.details.put(key, value);
   }
 }

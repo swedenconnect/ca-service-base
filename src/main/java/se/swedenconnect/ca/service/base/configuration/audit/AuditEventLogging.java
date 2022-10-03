@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Spring component for logging audit events to the process log.
+ */
 @Slf4j
 @Component
 public class AuditEventLogging {
 
-    public AuditEventLogging() {
-    }
+  /**
+   * Constructor.
+   */
+  public AuditEventLogging() {
+  }
 
-    @EventListener
-    public void auditEventHappened(AuditApplicationEvent auditApplicationEvent) {
-        AuditEvent auditEvent = auditApplicationEvent.getAuditEvent();
-        log.debug("Auditlogger logged event: {}", auditEvent.toString());
-    }
+  /**
+   * Function executed at audit events.
+   *
+   * @param auditApplicationEvent the audit event
+   */
+  @EventListener
+  public void auditEventHappened(final AuditApplicationEvent auditApplicationEvent) {
+    AuditEvent auditEvent = auditApplicationEvent.getAuditEvent();
+    log.debug("Auditlogger logged event: {}", auditEvent.toString());
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,44 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
 
 import java.util.Arrays;
 import java.util.Optional;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
- * Audit events
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Audit events.
  */
+@AllArgsConstructor
+@Getter
 public enum AuditEventEnum {
-    certificateRequested ("CERTIFICATE_REQUESTED"),
-    revocationRequested ("REVOCATION_REQUESTED"),
-    certificateIssued ("CERTIFICATE_ISSUED"),
-    expiredCertDeleted("EXPIRED_CERT_DELETED"),
-    certificateRevoked("CERTIFICATE_REVOKED"),
-    ocspCertificateIssued("OCSP_CERT_ISSUED"),
-    selfSignedCACertIsssued("SELF_SIGNED_CA_CERT_ISSUED"),
-    crlPublished("CRL_PUBLISHED"),
-    startup("CA_SERVICE_STARTUP"),
-    shutdown("CA_SERVICE_SHUTDOWN"),
-    internalError("INTERNAL_SERVER_ERROR");
+  /** Certificate requested */
+  certificateRequested("CERTIFICATE_REQUESTED"),
 
-    String eventName;
+  /** Revocation requested */
+  revocationRequested("REVOCATION_REQUESTED"),
 
-    AuditEventEnum(String eventName) {
-        this.eventName = eventName;
-    }
+  /** Certificate issued */
+  certificateIssued("CERTIFICATE_ISSUED"),
 
-    public String getEventName() {
-        return eventName;
-    }
+  /** Expired certificate deleted */
+  expiredCertDeleted("EXPIRED_CERT_DELETED"),
 
-    public static Optional<AuditEventEnum> getAuditEventFromTypeLabel(String eventTypeLabel){
-        return Arrays.stream(values())
-                .filter(auditEvent -> auditEvent.getEventName().equalsIgnoreCase(eventTypeLabel))
-                .findFirst();
-    }
+  /** Certificate revoked */
+  certificateRevoked("CERTIFICATE_REVOKED"),
+
+  /** OCSP certificate issued */
+  ocspCertificateIssued("OCSP_CERT_ISSUED"),
+
+  /** Self signed CA certificate issued */
+  selfSignedCACertIsssued("SELF_SIGNED_CA_CERT_ISSUED"),
+
+  /** CRL Published */
+  crlPublished("CRL_PUBLISHED"),
+
+  /** Service startup */
+  startup("CA_SERVICE_STARTUP"),
+
+  /** Service shut down */
+  shutdown("CA_SERVICE_SHUTDOWN"),
+
+  /** Service internal error */
+  internalError("INTERNAL_SERVER_ERROR");
+
+  /** Event name */
+  private String eventName;
+
+  /**
+   * Get audit event from label name
+   *
+   * @param eventTypeLabel event type label
+   * @return Optional audit event type
+   */
+  public static Optional<AuditEventEnum> getAuditEventFromTypeLabel(final String eventTypeLabel) {
+    return Arrays.stream(values())
+        .filter(auditEvent -> auditEvent.getEventName().equalsIgnoreCase(eventTypeLabel))
+        .findFirst();
+  }
 }

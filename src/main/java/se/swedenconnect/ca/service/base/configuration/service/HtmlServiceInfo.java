@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.service;
 
-import lombok.Data;
-import lombok.ToString;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import lombok.Data;
+import lombok.ToString;
+
 /**
- * Configuration info for service information used in HTML pages
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Configuration info for service information used in HTML pages.
  */
 @Component
 @ConfigurationProperties(prefix = "ca-service.service-info")
@@ -36,10 +32,13 @@ public class HtmlServiceInfo {
 
   /** Title heading of the service home page */
   private String homePageTitle;
+
   /** The prefix of the title of all HTML pages - A suitable suffix is specified in each HTML page */
   private String htmlTitlePrefix;
+
   /** The description meta tag content of HTML pages */
   private String htmlDescription;
+
   /** The Author meta tag of HTML pages */
   private String htmlAuthor;
 

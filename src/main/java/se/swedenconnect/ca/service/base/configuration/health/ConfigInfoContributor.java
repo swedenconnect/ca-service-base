@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,26 +22,29 @@ import org.springframework.stereotype.Component;
 
 /**
  * Info contributor for the Health Service.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 public class ConfigInfoContributor implements InfoContributor {
 
+  private final ServiceInfo serviceInfo;
 
-    private ServiceInfo serviceInfo;
+  /**
+   * Constructor
+   *
+   * @param serviceInfo service information
+   */
+  @Autowired
+  public ConfigInfoContributor(final ServiceInfo serviceInfo) {
+    this.serviceInfo = serviceInfo;
+  }
 
-    @Autowired
-    public ConfigInfoContributor(ServiceInfo serviceInfo) {
-        this.serviceInfo = serviceInfo;
-    }
-
-    /**
-     * Adds the policy configuration to the information released by the Spring Boot actuator info-endpoint.
-     */
-    @Override
-    public void contribute(Builder builder) {
-        builder.withDetail("CA-service-information", serviceInfo.getCaServiceInfo());
-    }
+  /**
+   * Adds the policy configuration to the information released by the Spring Boot actuator info-endpoint.
+   *
+   * @param builder service information builder
+   */
+  @Override
+  public void contribute(final Builder builder) {
+    builder.withDetail("CA-service-information", this.serviceInfo.getCaServiceInfo());
+  }
 }

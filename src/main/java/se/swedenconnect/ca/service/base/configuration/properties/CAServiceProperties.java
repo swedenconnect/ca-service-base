@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.properties;
-
-import lombok.Data;
-import lombok.ToString;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+import lombok.Data;
+import lombok.ToString;
+
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CA service configuration properties.
  */
 @Configuration
 @ConfigurationProperties(prefix = "ca-service.instance")
@@ -35,7 +32,7 @@ import java.util.Map;
 @ToString
 public class CAServiceProperties {
 
-  /** Configuration data map for instances of a CA */
-  Map<String, CAConfigData> conf;
+  /** Configuration data map for instances of a CA. */
+  private Map<String, CAConfigData> conf;
 
 }

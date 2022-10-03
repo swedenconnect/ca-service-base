@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,46 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package se.swedenconnect.ca.service.base.configuration.instance;
-
-import se.swedenconnect.ca.engine.ca.issuer.CAService;
+package se.swedenconnect.ca.service.base.ca;
 
 import java.util.List;
 
+import se.swedenconnect.ca.engine.ca.issuer.CAService;
+
 /**
- * Interface for implementing a bean that constructs and provides CA services based on current configuration data
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Interface for implementing a bean that constructs and provides CA services based on current configuration data.
  */
 public interface CAServices {
 
   /**
-   * List the keys for all available CA services
+   * List the keys for all available CA services.
+   *
    * @return list of CA service identifying keys
    */
   List<String> getCAServiceKeys();
 
   /**
    * Test if the CA service is initialized and ready for use
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return true if the CA service is initialized, otherwise false
    */
-  boolean isServiceInitialized(String instance);
+  boolean isServiceInitialized(final String instance);
 
   /**
    * Test if the CA service is enabled or disabled for certificate issuance by configuration
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return true if the CA service is enabled
    */
-  boolean isServiceEnabled(String instance);
+  boolean isServiceEnabled(final String instance);
 
   /**
    * Getter for a CA service for a specified key
+   *
    * @param instance name of the instance identifying the CA service instance
    * @return CA service instance or null if no CA service match the specified instance name
    */
-  CAService getCAService(String instance);
+  CAService getCAService(final String instance);
 
 }

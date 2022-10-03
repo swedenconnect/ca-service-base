@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.keys;
 
 import java.io.IOException;
 
 /**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Violations of public key policy.
  */
 public class PublicKeyPolicyException extends IOException {
 
-  public PublicKeyPolicyException() {
-  }
+  private static final long serialVersionUID = 1703464085045114640L;
 
-  public PublicKeyPolicyException(String message) {
+  /**
+   * Constructor.
+   *
+   * @param message the error message
+   */
+  public PublicKeyPolicyException(final String message) {
     super(message);
   }
 
-  public PublicKeyPolicyException(String message, Throwable cause) {
+  /**
+   * Constructor.
+   *
+   * @param message the error message
+   * @param cause the cause of the error
+   */
+  public PublicKeyPolicyException(final String message, final Throwable cause) {
     super(message, cause);
   }
 
-  public PublicKeyPolicyException(Throwable cause) {
-    super(cause);
-  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.service.base.configuration.audit;
-
-import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+
+/**
+ * Context listener for CA service.
+ */
 public class CAServiceContextListener implements ServletContextListener {
 
-    private ApplicationEventPublisher applicationEventPublisher;
+  /** Application event publisher */
+  private final ApplicationEventPublisher applicationEventPublisher;
 
-    public CAServiceContextListener(ApplicationEventPublisher applicationEventPublisher) {
-        this.applicationEventPublisher = applicationEventPublisher;
-    }
+  /**
+   * Constructor creating a context listener with an application event publisher.
+   *
+   * @param applicationEventPublisher application event publisher
+   */
+  public CAServiceContextListener(final ApplicationEventPublisher applicationEventPublisher) {
+    this.applicationEventPublisher = applicationEventPublisher;
+  }
 
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        applicationEventPublisher.publishEvent(new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.startup.getEventName()));
-    }
+  /** {@inheritDoc} */
+  @Override
+  public void contextInitialized(final ServletContextEvent servletContextEvent) {
+    this.applicationEventPublisher.publishEvent(
+        new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.startup.getEventName()));
+  }
 
-    @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
-        applicationEventPublisher.publishEvent(new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.shutdown.getEventName()));
-    }
+  /** {@inheritDoc} */
+  @Override
+  public void contextDestroyed(final ServletContextEvent servletContextEvent) {
+    this.applicationEventPublisher.publishEvent(
+        new AuditApplicationEvent(AuditEventFactory.DEFAULT_AUDIT_PRINCIPAL, AuditEventEnum.shutdown.getEventName()));
+  }
 }

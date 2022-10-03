@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,52 +15,56 @@
  */
 package se.swedenconnect.ca.service.base.configuration.health;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Service health indicator bean.
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
  */
 @Component
 @Slf4j
 public class ServiceHealthIndicator implements HealthIndicator {
 
-    private final ServiceInfo serviceInfo;
+  private final ServiceInfo serviceInfo;
 
-    @Autowired
-    public ServiceHealthIndicator(ServiceInfo serviceInfo) {
-        this.serviceInfo = serviceInfo;
-    }
+  /**
+   * Constructor for the service health indicator
+   *
+   * @param serviceInfo information about the service being monitored for health issues
+   */
+  @Autowired
+  public ServiceHealthIndicator(final ServiceInfo serviceInfo) {
+    this.serviceInfo = serviceInfo;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Health health() {
-        try {
-            serviceInfo.testConfiguration();
-        } catch (RuntimeException ex){
-            if (ex instanceof ServiceHealthWarningException){
-                log.warn("The CA Service has a health warning: {}", ex.getMessage());
-                return Health
-                  .status(new Status("WARNING", ex.getMessage()))
-                  .withDetails(((ServiceHealthWarningException)ex).getDetails())
-                  .build();
-            }
-            log.warn("The CA Service has a negative health state: {}", ex.getMessage());
-            return Health
-                    .down()
-                    .withDetail("error-message", ex.getMessage())
-                    .build();
-        }
-        return Health.up().build();
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Health health() {
+    try {
+      this.serviceInfo.testConfiguration();
     }
+    catch (final RuntimeException ex) {
+      if (ex instanceof ServiceHealthWarningException) {
+        log.warn("The CA Service has a health warning: {}", ex.getMessage());
+        return Health
+            .status(new Status("WARNING", ex.getMessage()))
+            .withDetails(((ServiceHealthWarningException) ex).getDetails())
+            .build();
+      }
+      log.warn("The CA Service has a negative health state: {}", ex.getMessage());
+      return Health
+          .down()
+          .withDetail("error-message", ex.getMessage())
+          .build();
+    }
+    return Health.up().build();
+  }
 
 }

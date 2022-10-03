@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright 2021-2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,42 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package se.swedenconnect.ca.service.base.configuration.instance.impl;
-
-import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
-import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
+package se.swedenconnect.ca.service.base.ca.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import se.swedenconnect.ca.service.base.ca.CAServices;
+import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
+import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
+
 /**
- * The first level of abstract implementation of the CAServices interface
+ * The first level of abstract implementation of the CAServices interface.
  *
- * The CAServices interface is designed to hold a whole set of individual CA instances
- * based on property settings
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * The CAServices interface is designed to hold a whole set of individual CA instances based on property settings.
  */
 public abstract class AbstractCAServices implements CAServices {
 
+  /** Configuration data used to set up one or more CA service instances */
   protected final InstanceConfiguration instanceConfiguration;
 
-  public AbstractCAServices(InstanceConfiguration instanceConfiguration){
+  /**
+   * Constructor for CA service instances
+   *
+   * @param instanceConfiguration configuration data
+   */
+  public AbstractCAServices(final InstanceConfiguration instanceConfiguration) {
     this.instanceConfiguration = instanceConfiguration;
   }
 
   /** {@inheritDoc} */
-  @Override public List<String> getCAServiceKeys() {
-    return new ArrayList<>(instanceConfiguration.getInstanceConfigMap().keySet());
+  @Override
+  public List<String> getCAServiceKeys() {
+    return new ArrayList<>(this.instanceConfiguration.getInstanceConfigMap().keySet());
   }
 
   /** {@inheritDoc} */
-  @Override public boolean isServiceEnabled(String key) {
-    if (instanceConfiguration.getInstanceConfigMap().containsKey(key)){
-      CAConfigData caConfigData = instanceConfiguration.getInstanceConfigMap().get(key);
+  @Override
+  public boolean isServiceEnabled(final String key) {
+    if (this.instanceConfiguration.getInstanceConfigMap().containsKey(key)) {
+      final CAConfigData caConfigData = this.instanceConfiguration.getInstanceConfigMap().get(key);
       return caConfigData.getEnabled();
     }
     return false;
