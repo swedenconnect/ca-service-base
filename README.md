@@ -22,7 +22,18 @@ implements the following functionality:
 - Basic error handling
 - Basic CA service implementation
 
------
+## Maven
+
+Add this maven dependency to your project
+
+```
+<dependency>
+    <groupId>se.swedenconnect.ca</groupId>
+    <artifactId>ca-service-base/artifactId>
+    <version>${ca-service-base.version}</version>
+</dependency>
+```
+
 ## Documentation
 
 ---
@@ -38,3 +49,8 @@ Examples of this are provided in the following code projects:
 
 - [https://github.com/swedenconnect/ca-headless](https://github.com/swedenconnect/ca-headless)
 - [https://github.com/swedenconnect/ca-signservice](https://github.com/swedenconnect/ca-signservice)
+
+-----
+
+Copyright &copy; 2022, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+
