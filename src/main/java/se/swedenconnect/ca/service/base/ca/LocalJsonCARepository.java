@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,6 +45,7 @@ import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
 import se.swedenconnect.ca.engine.ca.repository.SortBy;
 import se.swedenconnect.ca.engine.ca.repository.impl.SerializableCertificateRecord;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
+import se.swedenconnect.ca.engine.revocation.crl.CRLMetadata;
 import se.swedenconnect.ca.engine.revocation.crl.CRLRevocationDataProvider;
 import se.swedenconnect.ca.engine.revocation.crl.RevokedCertificate;
 
@@ -85,8 +87,8 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
     }
     // Load current certs to memory
     this.issuedCerts = mapper.readValue(certificateRecordsFile,
-        new TypeReference<List<SerializableCertificateRecord>>() {
-        });
+      new TypeReference<List<SerializableCertificateRecord>>() {
+      });
     log.info("Local JSON file backed CA repository initialized with {} certificates", this.issuedCerts.size());
     if (!crlFile.exists()) {
       this.crlNumber = BigInteger.ZERO;
@@ -114,16 +116,16 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   @Override
   public List<BigInteger> getAllCertificates() {
     return this.issuedCerts.stream()
-        .map(certificateRecord -> certificateRecord.getSerialNumber())
-        .collect(Collectors.toList());
+      .map(certificateRecord -> certificateRecord.getSerialNumber())
+      .collect(Collectors.toList());
   }
 
   /** {@inheritDoc} */
   @Override
   public CertificateRecord getCertificate(final BigInteger bigInteger) {
     final Optional<SerializableCertificateRecord> recordOptional = this.issuedCerts.stream()
-        .filter(certificateRecord -> certificateRecord.getSerialNumber().equals(bigInteger))
-        .findFirst();
+      .filter(certificateRecord -> certificateRecord.getSerialNumber().equals(bigInteger))
+      .findFirst();
     return recordOptional.isPresent() ? recordOptional.get() : null;
   }
 
@@ -138,8 +140,8 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   public int getCertificateCount(final boolean notRevoked) {
     if (notRevoked) {
       return (int) this.issuedCerts.stream()
-          .filter(certificateRecord -> !certificateRecord.isRevoked())
-          .count();
+        .filter(certificateRecord -> !certificateRecord.isRevoked())
+        .count();
     }
     return this.issuedCerts.size();
   }
@@ -147,16 +149,16 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   /** {@inheritDoc} */
   @Override
   public List<CertificateRecord> getCertificateRange(int page, final int pageSize, final boolean notRevoked,
-      final SortBy sortBy, final boolean descending) {
+    final SortBy sortBy, final boolean descending) {
 
     final List<CertificateRecord> records = this.issuedCerts.stream()
-        .filter(certificateRecord -> {
-          if (notRevoked) {
-            return !certificateRecord.isRevoked();
-          }
-          return true;
-        })
-        .collect(Collectors.toList());
+      .filter(certificateRecord -> {
+        if (notRevoked) {
+          return !certificateRecord.isRevoked();
+        }
+        return true;
+      })
+      .collect(Collectors.toList());
 
     if (sortBy != null) {
       switch (sortBy) {
@@ -197,12 +199,12 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   @Override
   public List<RevokedCertificate> getRevokedCertificates() {
     return this.issuedCerts.stream()
-        .filter(certificateRecord -> certificateRecord.isRevoked())
-        .map(certificateRecord -> new RevokedCertificate(
-            certificateRecord.getSerialNumber(),
-            certificateRecord.getRevocationTime(),
-            certificateRecord.getReason()))
-        .collect(Collectors.toList());
+      .filter(certificateRecord -> certificateRecord.isRevoked())
+      .map(certificateRecord -> new RevokedCertificate(
+        certificateRecord.getSerialNumber(),
+        certificateRecord.getRevocationTime(),
+        certificateRecord.getReason()))
+      .collect(Collectors.toList());
   }
 
   @Override
@@ -228,6 +230,29 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
     }
   }
 
+  @Override public CRLMetadata getCurrentCRLMetadata() {
+
+    final X509CRLHolder currentCrl = getCurrentCrl();
+    if (currentCrl == null) {
+      log.debug("No CRL file is available - Resetting CRL metadata to support initial CRL creation");
+      // No CRL is available. Return empty metadata to allow initial CRL creation;
+      return CRLMetadata.builder()
+        .crlNumber(BigInteger.ZERO)
+        .issueTime(Instant.ofEpochMilli(0L))
+        .nextUpdate(Instant.ofEpochMilli(0L))
+        .revokedCertCount(0)
+        .build();
+    }
+
+    log.debug("Returning CRL metadata from current CRL");
+    return CRLMetadata.builder()
+      .crlNumber(crlNumber)
+      .issueTime(currentCrl.getThisUpdate().toInstant())
+      .nextUpdate(currentCrl.getNextUpdate().toInstant())
+      .revokedCertCount(currentCrl.getRevokedCertificates().size())
+      .build();
+  }
+
   /**
    * From this point we only deal with functions that updates the repository
    */
@@ -240,15 +265,15 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
     }
     catch (final Exception e) {
       throw e instanceof IOException
-          ? (IOException) e
-          : new IOException(e);
+        ? (IOException) e
+        : new IOException(e);
     }
   }
 
   private void internalAddCertificate(final X509CertificateHolder certificate) throws IOException {
     if (this.criticalError) {
       throw new IOException(
-          "This repository encountered a critical error and is not operational - unable to store certificates");
+        "This repository encountered a critical error and is not operational - unable to store certificates");
     }
     if (certificate != null) {
       final CertificateRecord record = this.getCertificate(certificate.getSerialNumber());
@@ -256,7 +281,7 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
         throw new IOException("This certificate already exists in the certificate repository");
       }
       this.issuedCerts.add(new SerializableCertificateRecord(certificate.getEncoded(), certificate.getSerialNumber(),
-          certificate.getNotBefore(), certificate.getNotAfter(), false, null, null));
+        certificate.getNotBefore(), certificate.getNotAfter(), false, null, null));
     }
     if (!this.saveRepositoryData()) {
       throw new IOException("Unable to save issued certificate");
@@ -266,19 +291,19 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   /** {@inheritDoc} */
   @Override
   public void revokeCertificate(final BigInteger serialNumber, final int reason, final Date revocationTime)
-      throws CertificateRevocationException {
+    throws CertificateRevocationException {
     try {
       this.internalRepositoryUpdate(UpdateType.revokeCert, new Object[] { serialNumber, reason, revocationTime });
     }
     catch (final Exception e) {
       throw e instanceof CertificateRevocationException
-          ? (CertificateRevocationException) e
-          : new CertificateRevocationException(e);
+        ? (CertificateRevocationException) e
+        : new CertificateRevocationException(e);
     }
   }
 
   private void internalRevokeCertificate(final BigInteger serialNumber, final int reason, final Date revocationTime)
-      throws CertificateRevocationException {
+    throws CertificateRevocationException {
     if (serialNumber == null) {
       throw new CertificateRevocationException("Null Serial number");
     }
@@ -319,11 +344,11 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
         if (CRLReason.removeFromCRL == reason) {
           log.debug("Revocation removal request denied since certificate has already been permanently revoked");
           throw new CertificateRevocationException(
-              "Revocation removal request denied since certificate has already been permanently revoked");
+            "Revocation removal request denied since certificate has already been permanently revoked");
         }
         log.debug("Certificate is already revoked with reason other than certificate hold");
         throw new CertificateRevocationException(
-            "Revocation request denied since certificate is already revoked with reason other than certificate hold");
+          "Revocation request denied since certificate is already revoked with reason other than certificate hold");
       }
     }
 
@@ -348,12 +373,12 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
   public List<BigInteger> removeExpiredCerts(final int gracePeriodSeconds) throws IOException {
     try {
       return (List<BigInteger>) this.internalRepositoryUpdate(UpdateType.removeExpiredCerts,
-          new Object[] { gracePeriodSeconds });
+        new Object[] { gracePeriodSeconds });
     }
     catch (final Exception e) {
       throw e instanceof IOException
-          ? (IOException) e
-          : new IOException(e);
+        ? (IOException) e
+        : new IOException(e);
     }
   }
 
@@ -361,18 +386,18 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
     final List<BigInteger> removedSerialList = new ArrayList<>();
     final Date notBefore = new Date(System.currentTimeMillis() - 1000L * gracePeriodSeconds);
     this.issuedCerts = this.issuedCerts.stream()
-        .filter(certificateRecord -> {
-          final Date expiryDate = certificateRecord.getExpiryDate();
-          // Check if certificate expired before the current time minus grace period
-          if (expiryDate.before(notBefore)) {
-            // Yes - Remove certificate
-            removedSerialList.add(certificateRecord.getSerialNumber());
-            return false;
-          }
-          // No - keep certificate on repository
-          return true;
-        })
-        .collect(Collectors.toList());
+      .filter(certificateRecord -> {
+        final Date expiryDate = certificateRecord.getExpiryDate();
+        // Check if certificate expired before the current time minus grace period
+        if (expiryDate.before(notBefore)) {
+          // Yes - Remove certificate
+          removedSerialList.add(certificateRecord.getSerialNumber());
+          return false;
+        }
+        // No - keep certificate on repository
+        return true;
+      })
+      .collect(Collectors.toList());
     if (!this.saveRepositoryData()) {
       throw new IOException("Unable to save consolidated certificate list");
     }
@@ -388,7 +413,7 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
    * @throws Exception On errors performing the update request
    */
   private synchronized Object internalRepositoryUpdate(final UpdateType updateType, final Object[] args)
-      throws Exception {
+    throws Exception {
     switch (updateType) {
     case addCert:
       this.internalAddCertificate((X509CertificateHolder) args[0]);

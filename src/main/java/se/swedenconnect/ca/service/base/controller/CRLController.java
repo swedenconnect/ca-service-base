@@ -17,6 +17,7 @@ package se.swedenconnect.ca.service.base.controller;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x509.CRLNumber;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.engine.revocation.crl.CRLMetadata;
 import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventEnum;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditEventFactory;
@@ -105,9 +107,11 @@ public class CRLController implements ApplicationEventPublisherAware {
 
   private byte[] getCurrentCrl(final CAService caService) {
 
+    CRLMetadata crlMetadata = caService.getCaRepository().getCRLRevocationDataProvider().getCurrentCRLMetadata();
+
     try {
       final X509CRLHolder currentCrl = caService.getCurrentCrl();
-      this.validateCRL(currentCrl);
+      this.validateCRL(currentCrl, crlMetadata);
       return currentCrl.getEncoded();
     }
     catch (final Exception ex) {
@@ -117,7 +121,7 @@ public class CRLController implements ApplicationEventPublisherAware {
     try {
       log.debug("Attempting to publish new CRL");
       final X509CRLHolder currentCrl = caService.publishNewCrl();
-      this.validateCRL(currentCrl);
+      this.validateCRL(currentCrl, crlMetadata);
       final Extension crlNumberExtension = currentCrl.getExtension(Extension.cRLNumber);
       final CRLNumber crlNumberFromCrl = CRLNumber.getInstance(crlNumberExtension.getParsedValue());
       log.info("Succeeded to publish new CRL with CRL number {}", crlNumberFromCrl.getCRLNumber().toString());
@@ -136,10 +140,19 @@ public class CRLController implements ApplicationEventPublisherAware {
     }
   }
 
-  private void validateCRL(final X509CRLHolder currentCrl) {
+  private void validateCRL(final X509CRLHolder currentCrl, CRLMetadata crlMetadata) {
+    Objects.requireNonNull(currentCrl, "Current CRL file does not exist");
+
+    // Check if CRL is expired
     final Date nextUpdate = currentCrl.getNextUpdate();
     if (nextUpdate.before(new Date(System.currentTimeMillis() + this.crlRefreshMarginSeconds * 1000L))) {
       throw new IllegalArgumentException("The current CRL has expired");
+    }
+
+    // Check if CRL number is superseded
+    CRLNumber crlNumber = CRLNumber.getInstance(currentCrl.getExtension(Extension.cRLNumber).getParsedValue());
+    if (crlMetadata != null && crlMetadata.getCrlNumber().compareTo(crlNumber.getCRLNumber()) > 0 ) {
+      throw new IllegalArgumentException("Newer CRL number is used");
     }
   }
 

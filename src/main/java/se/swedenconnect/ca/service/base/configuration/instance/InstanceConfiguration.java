@@ -15,10 +15,12 @@
  */
 package se.swedenconnect.ca.service.base.configuration.instance;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import lombok.Getter;
@@ -44,6 +46,7 @@ public class InstanceConfiguration {
    * @param caServiceProperties the configuration properties of configured CA instances
    * @param defaultName The default name elements of ca services
    */
+  @Autowired
   public InstanceConfiguration(final CAServiceProperties caServiceProperties, final EntityNameProperties defaultName) {
     this.caServiceProperties = caServiceProperties;
     this.defaultName = defaultName;
@@ -94,6 +97,7 @@ public class InstanceConfiguration {
     caConfig.setCustomCertStorageLocation(
         (String) this.getValue(prop.getCustomCertStorageLocation(), defaultVal.getCustomCertStorageLocation()));
     caConfig.setName(this.getName(prop.getName()));
+    caConfig.setCrlMaxDurationBeforeUpgrade((Duration) this.getValue(prop.getCrlMaxDurationBeforeUpgrade(), defaultVal.getCrlMaxDurationBeforeUpgrade()));
     return caConfig;
   }
 

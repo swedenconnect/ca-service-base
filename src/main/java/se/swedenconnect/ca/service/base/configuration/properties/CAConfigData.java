@@ -15,7 +15,11 @@
  */
 package se.swedenconnect.ca.service.base.configuration.properties;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
+
+import org.springframework.boot.convert.DurationUnit;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,7 +44,7 @@ public class CAConfigData {
   private OCSPConfig ocsp;
 
   /**
-   * Canfiguration for the certificate issuing part of the CA service
+   * Configuration for the certificate issuing part of the CA service
    */
   @Data
   @NoArgsConstructor
@@ -79,6 +83,10 @@ public class CAConfigData {
 
     /** path to a custom storage location for the CA repository data other than the instance data folder */
     private String customCertStorageLocation;
+
+    /** Max duration after issuance when issuance of a new CRL will be enforced */
+    @DurationUnit(ChronoUnit.SECONDS)
+    private Duration crlMaxDurationBeforeUpgrade;
   }
 
   /**
