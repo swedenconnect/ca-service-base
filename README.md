@@ -22,6 +22,17 @@ implements the following functionality:
 - Basic error handling
 - Basic CA service implementation
 
+## Multiple service instances
+The underlying functionality in this library is specifically designed to allow deployment on multiple 
+server instances. In order to enable this in practice, the implementation of repository must support
+synchronized data sharing of CA repository data as well as CRL metadata. This implementation use the
+repository and metadata API:s to ensure functionality over multiple servers when synchronized storage is
+used in the underlying data storage solution.
+
+Note that the default JSON based repository does not support synchronization of data over multiple instances, 
+but the implementation provided here: [https://github.com/swedenconnect/ca-headless](https://github.com/swedenconnect/ca-headless)
+implements fully synchronized storage using database support.
+
 ## Maven
 
 Add this maven dependency to your project
