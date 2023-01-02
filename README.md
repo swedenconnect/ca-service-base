@@ -29,7 +29,7 @@ synchronized data sharing of CA repository data as well as CRL metadata. This im
 repository and metadata API:s to ensure functionality over multiple servers when synchronized storage is
 used in the underlying data storage solution.
 
-Note that the default JSON based repository does not support synchronization of data over multiple instances, 
+Note that the default JSON based repository provided in this library does not support synchronisation of data over multiple instances,
 but the implementation provided here: [https://github.com/swedenconnect/ca-headless](https://github.com/swedenconnect/ca-headless)
 implements fully synchronized storage using database support.
 
