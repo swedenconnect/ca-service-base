@@ -568,8 +568,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       keyLocation = this.locateFile(keyDir, entityIdentifier + ".jks", keyConf.getResource());
       break;
     case pem:
+      keyLocation = this.locateFile(keyDir, entityIdentifier + ".key", null);
     case pkcs11:
-      // keyLocation = locateFile(keyDir, entityIdentifier + ".key", null);
       certLocation = this.locateFile(keyDir, entityIdentifier + ".crt", null);
       break;
     case pkcs12:
