@@ -6,13 +6,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.3</version>
+    <version>2.7.5</version>
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>ca-service-base</artifactId>
-  <version>1.4.0</version>
+  <version>1.5.0</version>
   <packaging>jar</packaging>
 
   <name>CA Service Base</name>
@@ -21,9 +21,9 @@
 
   <properties>
     <java.version>11</java.version>
-    <ca.engine.version>1.2.2</ca.engine.version>
+    <ca.engine.version>2.0.0</ca.engine.version>
     <credential.support.version>1.2.4</credential.support.version>
-    <ca.cmc.version>1.3.1</ca.cmc.version>
+    <ca.cmc.version>1.3.2</ca.cmc.version>
   </properties>
 
   <licenses>
@@ -82,29 +82,50 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>se.idsec.signservice.commons</groupId>
+        <artifactId>signservice-bom</artifactId>
+        <version>1.2.3</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
         <groupId>se.swedenconnect.security</groupId>
         <artifactId>credentials-support</artifactId>
         <version>${credential.support.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>se.swedenconnect.ca</groupId>
         <artifactId>ca-engine</artifactId>
         <version>${ca.engine.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>se.swedenconnect.ca</groupId>
         <artifactId>cmc</artifactId>
         <version>${ca.cmc.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.jvnet.jaxb2_commons</groupId>
         <artifactId>jaxb2-basics-runtime</artifactId>
         <version>1.11.1</version>
       </dependency>
-    </dependencies>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>5.3.23</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.23</version>
+      </dependency>
+
+  </dependencies>
   </dependencyManagement>
 
   <dependencies>
@@ -112,41 +133,41 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
-    
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
@@ -159,7 +180,7 @@
       <artifactId>syslog-java-client</artifactId>
       <version>1.1.7</version>
     </dependency>
-    
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -170,17 +191,17 @@
       <groupId>se.swedenconnect.security</groupId>
       <artifactId>credentials-support</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.swedenconnect.ca</groupId>
       <artifactId>ca-engine</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>se.swedenconnect.ca</groupId>
       <artifactId>cmc</artifactId>
     </dependency>
-    
+
   </dependencies>
 
   <build>
@@ -188,7 +209,7 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>        
+        <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>11</source>
           <release>11</release>
@@ -217,7 +238,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.1.0</version>        
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>enforce</id>

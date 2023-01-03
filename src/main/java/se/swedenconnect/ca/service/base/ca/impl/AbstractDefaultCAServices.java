@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Sweden Connect
+ * Copyright 2023 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package se.swedenconnect.ca.service.base.ca.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
@@ -200,8 +201,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
         // Set the created CA chain as the credential chain
         final File chainFile = new File(certsDir, "ca-chain.pem");
         final File selfIssuedCaCertFile = new File(certsDir, "ca-self-signed.crt");
-        FileUtils.writeStringToFile(chainFile, BasicX509Utils.getPemCert(caCert.getEncoded()));
-        FileUtils.writeStringToFile(selfIssuedCaCertFile, BasicX509Utils.getPemCert(caCert.getEncoded()));
+        FileUtils.writeStringToFile(chainFile, BasicX509Utils.getPemCert(caCert.getEncoded()), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(selfIssuedCaCertFile, BasicX509Utils.getPemCert(caCert.getEncoded()), StandardCharsets.UTF_8);
         log.debug("Saved new self issued CA certificate to {}", chainFile.getAbsolutePath());
       }
       else {
@@ -231,7 +232,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       log.debug("Setting up CA Repository for instance {}", instance);
       final String crlDistrPoint = this.basicServiceConfig.getServiceUrl() + "/crl/" + instance + ".crl";
       log.debug("Setting CRL distribution point for instance {} to {}", instance, crlDistrPoint);
-      final CRLIssuerModel crlIssuerModel = this.getCRLIssuerModel(caConfig, caCert, crlDistrPoint, caRepository);
+      final CRLIssuerModel crlIssuerModel = this.getCRLIssuerModel(caConfig, caCert, crlDistrPoint, caRepository,
+        caConfig.getCrlMaxDurationBeforeUpgrade());
 
       // Create CA service with repository and CRL service
       log.debug("Instantiating the CA Service with CRL issuer for instance {}", instance);
@@ -566,8 +568,8 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       keyLocation = this.locateFile(keyDir, entityIdentifier + ".jks", keyConf.getResource());
       break;
     case pem:
+      keyLocation = this.locateFile(keyDir, entityIdentifier + ".key", null);
     case pkcs11:
-      // keyLocation = locateFile(keyDir, entityIdentifier + ".key", null);
       certLocation = this.locateFile(keyDir, entityIdentifier + ".crt", null);
       break;
     case pkcs12:
@@ -639,17 +641,17 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param caCert Certificate of the issuing CA
    * @param distributionPointUrl URL where revocation list can be obtained
    * @param repository the repository for the CA
+   * @param maxDurationBeforeCRLUpgrade
    * @return CRL issuer model
    */
   private CRLIssuerModel getCRLIssuerModel(final CAConfigData.CaConfig caConfig, final X509CertificateHolder caCert,
-      final String distributionPointUrl,
-      final CARepository repository) {
+    final String distributionPointUrl,
+    final CARepository repository, final Duration maxDurationBeforeCRLUpgrade) {
     final CAConfigData.ValidityData crlValidity = caConfig.getCrlValidity();
     final CRLIssuerModel crlIssuerModel = new CRLIssuerModel(
         caCert,
         caConfig.getAlgorithm(),
         Duration.ofHours(crlValidity.getAmount()),
-        repository.getCRLRevocationDataProvider(),
         distributionPointUrl);
 
     if (crlValidity.getUnit() != CAConfigData.ValidityUnit.H) {
@@ -657,6 +659,10 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
           .setExpiryOffset(GeneralCAUtils.getDurationFromTypeAndValue(crlValidity.getUnit(), crlValidity.getAmount()));
     }
     crlIssuerModel.setStartOffset(Duration.ofSeconds(crlValidity.getStartOffsetSec()));
+    if (maxDurationBeforeCRLUpgrade != null) {
+      log.debug("Setting max age before enforcing new CRL from CRL issuer to {}", maxDurationBeforeCRLUpgrade);
+      crlIssuerModel.setMaxDurationBeforeCRLUpgrade(maxDurationBeforeCRLUpgrade);
+    }
     return crlIssuerModel;
   }
 
