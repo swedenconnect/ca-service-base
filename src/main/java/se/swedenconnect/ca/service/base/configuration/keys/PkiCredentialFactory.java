@@ -111,6 +111,11 @@ public class PkiCredentialFactory {
           null, "PKCS11", this.pkcs11Provider.getName(),
           password, alias, null);
       p11Credential.init();
+      if (certificateFile != null){
+        X509Certificate preconfiguredP11Certificate = CertUtil.readCertificate(certificateFile);
+        log.debug("PKCS#11 key setup with externally configured certificate. Replacing credential certificate with configured certificate {}", preconfiguredP11Certificate);
+        p11Credential.setCertificate(preconfiguredP11Certificate);
+      }
       return p11Credential;
     case pem:
       Objects.requireNonNull(keySourceLocation, "Key source location must not be null for pem key sources");
