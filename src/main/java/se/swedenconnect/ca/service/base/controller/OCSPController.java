@@ -18,7 +18,7 @@ package se.swedenconnect.ca.service.base.controller;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ocsp.OCSPRequest;
