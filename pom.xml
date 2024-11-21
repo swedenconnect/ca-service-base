@@ -7,7 +7,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.7.6</version>
-    <relativePath /> <!-- lookup parent from repository -->
+    <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>se.swedenconnect.ca</groupId>
@@ -22,7 +22,7 @@
   <properties>
     <java.version>11</java.version>
     <ca.engine.version>2.0.1</ca.engine.version>
-    <credential.support.version>1.2.5</credential.support.version>
+    <credential.support.version>1.3.2</credential.support.version>
     <ca.cmc.version>1.3.3</ca.cmc.version>
   </properties>
 
@@ -230,7 +230,7 @@
             <id>enforce</id>
             <configuration>
               <rules>
-                <dependencyConvergence />
+                <dependencyConvergence/>
               </rules>
             </configuration>
             <goals>
