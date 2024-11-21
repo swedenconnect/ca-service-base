@@ -23,7 +23,7 @@ import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfigura
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
 /**
- * The first level of abstract implementation of the CAServices interface.
+ * The first level of an abstract implementation of the CAServices interface.
  *
  * The CAServices interface is designed to hold a whole set of individual CA instances based on property settings.
  */
