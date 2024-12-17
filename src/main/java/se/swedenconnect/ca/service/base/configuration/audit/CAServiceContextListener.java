@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package se.swedenconnect.ca.service.base.configuration.audit;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;

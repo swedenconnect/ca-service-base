@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package se.swedenconnect.ca.service.base.controller;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

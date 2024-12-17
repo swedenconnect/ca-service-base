@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -263,7 +265,29 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
           ocspAlgorithm = ocspConfig.getAlgorithm();
           final String ocspCertFileName = this.locateFile(certsDir, "ocsp.crt", null);
 
-          if (ocspCertFileName == null) {
+          // If there is an OCP Certificate. Check that it is still valid, and use it if still valid.
+          if (ocspCertFileName != null) {
+            // There is an existing OCSP certificate. Use that.
+            ocspIssuerCert = new JcaX509CertificateHolder(
+              Objects.requireNonNull(
+                BasicX509Utils.getCertOrNull(
+                  FileUtils.readFileToByteArray(
+                    new File(ocspCertFileName)))));
+
+            // Set the renew-after time to the half of the OCSP certificate validity time
+            long halfOcspValidityDays = caConfig.getOcspCertValidityAmount() / 2;
+            Instant renewAfter = ocspIssuerCert.getNotAfter().toInstant().minus(Duration.ofDays(halfOcspValidityDays));
+            if (Instant.now().isAfter(renewAfter)) {
+              // This OCSP certificate has passed half its validity time.
+              // Issue a new OCSP certificate instead of using this one.
+              log.debug("Found pre-configured OCSP certificate for {} but the expiry date {} has passed its half life. Renewing OCSP certificate.", ocspIssuerCert.getSubject().toString(), ocspIssuerCert.getNotAfter());
+              ocspIssuerCert = null;
+            } else {
+              log.debug("Found pre-configured OCSP certificate for {}", ocspIssuerCert.getSubject().toString());
+            }
+          }
+
+          if (ocspIssuerCert == null) {
             log.debug("Found no preconfigured OCSP signer certificate. Issuing a new OCSP signer certificate");
             // No OCSP certificate file was found. Generate a new OCSP certificate and save it
 
@@ -288,15 +312,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
                 BasicX509Utils.getPemCert(ocspIssuerCert.getEncoded()));
             log.debug("Saved new OCSP signer certificate at {}", certsDir.getAbsolutePath() + "/ocsp.crt");
           }
-          else {
-            // There is an existing OCSP certificate. Use that.
-            ocspIssuerCert = new JcaX509CertificateHolder(
-                Objects.requireNonNull(
-                    BasicX509Utils.getCertOrNull(
-                        FileUtils.readFileToByteArray(
-                            new File(ocspCertFileName)))));
-            log.debug("Found pre-configured OCSP certificate for {}", ocspIssuerCert.getSubject().toString());
-          }
+
           // Validate the ocsp issuer certificate and add it to the OCSP validation chain.
           ocspServiceChain.add(ocspIssuerCert);
           // Sort certificate chain order

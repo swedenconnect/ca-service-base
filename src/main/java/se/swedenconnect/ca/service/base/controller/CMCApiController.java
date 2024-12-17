@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;

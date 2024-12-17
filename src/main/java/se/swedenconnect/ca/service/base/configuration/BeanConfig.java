@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextListener;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

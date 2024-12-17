@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Sweden Connect
+ * Copyright 2024 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfigura
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 
 /**
- * The first level of abstract implementation of the CAServices interface.
+ * The first level of an abstract implementation of the CAServices interface.
  *
  * The CAServices interface is designed to hold a whole set of individual CA instances based on property settings.
  */
