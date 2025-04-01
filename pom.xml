@@ -70,17 +70,6 @@
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -255,20 +244,47 @@
       <build>
         <plugins>
 
+          <!--
+            See https://central.sonatype.org/publish/publish-portal-maven/
+          -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
             <version>3.3.1</version>
             <executions>
               <execution>
-                <phase>process-sources</phase>
                 <id>attach-sources</id>
                 <goals>
                   <goal>jar-no-fork</goal>
                 </goals>
               </execution>
               <execution>
-                <phase>process-test-sources</phase>
                 <id>attach-test-sources</id>
                 <goals>
                   <goal>test-jar-no-fork</goal>
@@ -288,48 +304,12 @@
                 </goals>
               </execution>
             </executions>
-            <configuration>
-              <doclint>all,-missing</doclint>
-              <additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
-              <additionalJOptions>
-                <additionalJOption>-Xdoclint:all</additionalJOption>
-                <additionalJOption>-Xdoclint:-missing</additionalJOption>
-              </additionalJOptions>
-              <detectJavaApiLink>true</detectJavaApiLink>
-              <doctitle>Certificate Authority (CA) engine - ${project.version}</doctitle>
-              <windowtitle>Certificate Authority (CA) engine - ${project.version}</windowtitle>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.7.0</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.6</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
           </plugin>
 
         </plugins>
       </build>
+
     </profile>
+
   </profiles>
 </project>
