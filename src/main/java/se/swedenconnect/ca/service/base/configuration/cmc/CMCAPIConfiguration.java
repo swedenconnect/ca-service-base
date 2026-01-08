@@ -17,6 +17,7 @@ package se.swedenconnect.ca.service.base.configuration.cmc;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -224,9 +225,10 @@ public class CMCAPIConfiguration {
     final String type = ksFile.getName().toLowerCase().endsWith(".p12")
         ? "PKCS12"
         : "JKS";
+    KeyStore ks = KeyStore.getInstance(type);
+    ks.load(new java.io.FileInputStream(ksFile), password);
     final PkiCredential credential =
-        new KeyStoreCredential(new FileSystemResource(ksFile), type, password, alias, password);
-    credential.init();
+        new KeyStoreCredential(ks, alias, password);
     return credential;
   }
 }

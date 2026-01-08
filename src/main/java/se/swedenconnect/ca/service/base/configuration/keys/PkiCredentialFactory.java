@@ -28,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,6 +42,11 @@ import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.security.credential.BasicCredential;
 import se.swedenconnect.security.credential.KeyStoreCredential;
 import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.pkcs11.FilePkcs11Configuration;
+import se.swedenconnect.security.credential.pkcs11.Pkcs11Configuration;
+import se.swedenconnect.security.credential.pkcs11.Pkcs11Credential;
+import se.swedenconnect.security.credential.pkcs11.SunPkcs11CertificatesAccessor;
+import se.swedenconnect.security.credential.pkcs11.SunPkcs11PrivateKeyAccessor;
 
 /**
  * Implements a factory for creating credentials based on configuration data.
@@ -62,6 +68,7 @@ public class PkiCredentialFactory {
 
   /** PKCS11 crypto provider for a present HSM slot, if available. */
   private final Provider pkcs11Provider;
+  private final String pkcs11ConfigurationLocation;
 
   /**
    * Constructor for the PKI credential factory
@@ -71,6 +78,7 @@ public class PkiCredentialFactory {
   public PkiCredentialFactory(final String pkcs11ConfigFilePath) {
     this.mockKeyCountryCode = "XX";
     this.mockKeyOrgName = "Test Org";
+    this.pkcs11ConfigurationLocation = pkcs11ConfigFilePath;
 
     Provider createdPkcs11Provider = null;
     if (pkcs11ConfigFilePath != null) {
@@ -95,26 +103,30 @@ public class PkiCredentialFactory {
   public PkiCredential getCredential(final CAConfigData.KeySourceType keySourceType, final File keySourceLocation,
       final String alias, final char[] password, final File certificateFile) throws Exception {
 
+    KeyStore keyStore = null;
     switch (keySourceType) {
     case jks:
+      keyStore = KeyStore.getInstance("JKS");
+      keyStore.load(new FileSystemResource(keySourceLocation).getInputStream(), password);
+      return new KeyStoreCredential(keyStore, alias, password);
     case pkcs12:
-      Objects.requireNonNull(keySourceLocation, "Key source location must not be null for key store key sources");
-      final KeyStoreCredential keyStoreCredential = new KeyStoreCredential(
-          new FileSystemResource(keySourceLocation),
-          keySourceType.name().toUpperCase(),
-          password, alias, password);
-      keyStoreCredential.init();
-      return keyStoreCredential;
+      keyStore = KeyStore.getInstance("PKCS12");
+      keyStore.load(new FileSystemResource(keySourceLocation).getInputStream(), password);
+      return new KeyStoreCredential(keyStore, alias, password);
     case pkcs11:
-      Objects.requireNonNull(this.pkcs11Provider, "PKCS11 provider must be set for PKCS 11 key sources");
-      final KeyStoreCredential p11Credential = new KeyStoreCredential(
-          null, "PKCS11", this.pkcs11Provider.getName(),
-          password, alias, null);
-      p11Credential.init();
+      if (this.pkcs11Provider == null) {
+        throw new IllegalArgumentException("PKCS11 provider must be set for PKCS 11 key sources");
+      }
+      Pkcs11Configuration pkcs11Configuration = new FilePkcs11Configuration(pkcs11ConfigurationLocation);
+      Pkcs11Credential p11Credential = new Pkcs11Credential(pkcs11Configuration, alias, password, new SunPkcs11PrivateKeyAccessor(), new SunPkcs11CertificatesAccessor());
+      log.trace("Initially loaded key credential certificate:\n{}", p11Credential.getCertificate());
       if (certificateFile != null){
         X509Certificate preconfiguredP11Certificate = CertUtil.readCertificate(certificateFile);
-        log.debug("PKCS#11 key setup with externally configured certificate. Replacing credential certificate with configured certificate {}", preconfiguredP11Certificate);
-        p11Credential.setCertificate(preconfiguredP11Certificate);
+        log.debug("PKCS#11 key setup with externally configured certificate. Replacing credential certificate with configured certificate");
+        log.trace("Replacing with preconfigured certificate:\n{}", preconfiguredP11Certificate);
+        p11Credential = new Pkcs11Credential(pkcs11Configuration, alias, password, new SunPkcs11PrivateKeyAccessor(), List.of(preconfiguredP11Certificate));
+      } else {
+        log.debug("No externally configured PKCS11 certificate. Using certificate from HSM");
       }
       return p11Credential;
     case pem:
@@ -124,7 +136,6 @@ public class PkiCredentialFactory {
           Arrays.toString(password));
       final BasicCredential pemCredential = new BasicCredential(CertUtil.readCertificate(certificateFile),
           pemKey.privateKey);
-      pemCredential.init();
       return pemCredential;
     case none:
       return null;
