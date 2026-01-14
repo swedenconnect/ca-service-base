@@ -15,24 +15,13 @@
  */
 package se.swedenconnect.ca.service.base.configuration.cmc;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.io.FileSystemResource;
-
-import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.cmc.api.CMCCaApi;
 import se.swedenconnect.ca.cmc.api.CMCRequestParser;
 import se.swedenconnect.ca.cmc.api.CMCResponseFactory;
@@ -40,12 +29,23 @@ import se.swedenconnect.ca.cmc.auth.AuthorizedCmcOperation;
 import se.swedenconnect.ca.cmc.auth.CMCValidator;
 import se.swedenconnect.ca.cmc.auth.impl.DefaultCMCValidator;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.engine.ca.models.cert.CertificateModelPolicy;
 import se.swedenconnect.ca.engine.configuration.CAAlgorithmRegistry;
 import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.audit.AuditCMCRequestParser;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
 import se.swedenconnect.security.credential.KeyStoreCredential;
 import se.swedenconnect.security.credential.PkiCredential;
+
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Bean Configuration for CMC API.
@@ -66,11 +66,13 @@ public class CMCAPIConfiguration {
    */
   @Bean
   @DependsOn("BasicServiceConfig")
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   Map<String, CMCCaApi> cmcCaApiMap(
       final CAServices caServices,
       final CMCConfigProperties cmcConfigProperties,
       final CMCReplayCheckerProvider replayCheckerProvider,
-      final CMCApiProvider cmcApiProvider) throws Exception {
+      final CMCApiProvider cmcApiProvider,
+      final Map<String, List<CertificateModelPolicy>> certificateModelPolicies) throws Exception {
 
     final Map<String, CMCCaApi> cmcCaApiMap = new HashMap<>();
     if (!cmcConfigProperties.isEnabled()) {
@@ -101,10 +103,10 @@ public class CMCAPIConfiguration {
           new CMCRequestParser(this.getCMCValidator(instanceKey, cmcConfigProperties),
               replayCheckerProvider.getCMCReplayChecker(instanceKey));
       final CMCResponseFactory responseFactory = new CMCResponseFactory(signerKey.getCertificateChain(), contentSigner);
-      final CMCCaApi cmcCaApi = cmcApiProvider.getCmcCaApi(instanceKey, caService, requestParser, responseFactory);
+      final CMCCaApi cmcCaApi = cmcApiProvider.getCmcCaApi(instanceKey, caService, requestParser, responseFactory, certificateModelPolicies.get(instanceKey));
       cmcCaApiMap.put(instanceKey, cmcCaApi);
       if (log.isDebugEnabled()) {
-        log.debug("CMC Response signer: {}", signerKey.getCertificate().getSubjectX500Principal());
+        log.debug("CMC Response signer: {}", Objects.requireNonNull(signerKey.getCertificate()).getSubjectX500Principal());
         log.debug("CMC API implementation: {}", cmcCaApi.getClass());
         log.debug("CMC Signing algorithm: {}", cmcConfigData.getAlgorithm());
       }
@@ -122,6 +124,7 @@ public class CMCAPIConfiguration {
    * @return map of CMC request parsers without replay checker
    * @throws IOException error parsing data
    */
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Bean
   Map<String, AuditCMCRequestParser> cmcRequestParserMap(final CAServices caServices,
       final CMCConfigProperties cmcConfigProperties)
@@ -156,10 +159,10 @@ public class CMCAPIConfiguration {
         if (log.isDebugEnabled()) {
           log.debug("Instance {} authorized CMC client: {} - with authorization rights: {}", instanceKey,
               cert.getSubject().toString(),
-              String.join(", ", instanceAuthzMap.get(instanceKey)
+              instanceAuthzMap.get(instanceKey)
                   .stream()
                   .map(AuthorizedCmcOperation::toString)
-                  .collect(Collectors.toList())));
+                  .collect(Collectors.joining(", ")));
         }
       }
     }
@@ -214,7 +217,7 @@ public class CMCAPIConfiguration {
     if (certsFromFile.size() != 1) {
       throw new IllegalArgumentException("A single certificate file is required");
     }
-    return certsFromFile.get(0);
+    return certsFromFile.getFirst();
   }
 
   private PkiCredential getSignerKey(final CMCConfigProperties.CMCConfigData cmcConfigData)
@@ -227,8 +230,6 @@ public class CMCAPIConfiguration {
         : "JKS";
     KeyStore ks = KeyStore.getInstance(type);
     ks.load(new java.io.FileInputStream(ksFile), password);
-    final PkiCredential credential =
-        new KeyStoreCredential(ks, alias, password);
-    return credential;
+    return new KeyStoreCredential(ks, alias, password);
   }
 }

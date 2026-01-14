@@ -20,6 +20,9 @@ import se.swedenconnect.ca.cmc.api.CMCRequestParser;
 import se.swedenconnect.ca.cmc.api.CMCResponseFactory;
 import se.swedenconnect.ca.cmc.api.impl.DefaultCMCCaApi;
 import se.swedenconnect.ca.engine.ca.issuer.CAService;
+import se.swedenconnect.ca.engine.ca.models.cert.CertificateModelPolicy;
+
+import java.util.List;
 
 /**
  * This provider is used to obtain the specific implementation of the CMC CA API that is to be used for a particular CA
@@ -46,5 +49,5 @@ public interface CMCApiProvider {
    * @return {@link CMCCaApi}
    */
   CMCCaApi getCmcCaApi(final String instance, final CAService caService,
-      final CMCRequestParser requestParser, final CMCResponseFactory responseFactory);
+      final CMCRequestParser requestParser, final CMCResponseFactory responseFactory, List<CertificateModelPolicy> policies);
 }
