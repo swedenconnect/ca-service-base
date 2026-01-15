@@ -24,7 +24,7 @@
 
     <ca.engine.version>2.2.0</ca.engine.version>
     <credential.support.version>2.0.7</credential.support.version>
-    <ca.cmc.version>1.5.0</ca.cmc.version>
+    <ca.cmc.version>2.0.0</ca.cmc.version>
     <bouncycastle.version>1.83</bouncycastle.version>
   </properties>
 
