@@ -35,8 +35,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +46,9 @@ import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLMetadata;
 import se.swedenconnect.ca.engine.revocation.crl.CRLRevocationDataProvider;
 import se.swedenconnect.ca.engine.revocation.crl.RevokedCertificate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Test implementation of a CA repository.
@@ -433,7 +434,7 @@ public class LocalJsonCARepository implements CARepository, CRLRevocationDataPro
       mapper.writeValue(this.certificateRecordsFile, this.issuedCerts);
       return true;
     }
-    catch (final IOException e) {
+    catch (final JacksonException e) {
       log.error("Error writing to the ca repository storage file", e);
       this.criticalError = true;
     }

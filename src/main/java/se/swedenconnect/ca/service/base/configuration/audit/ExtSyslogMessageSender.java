@@ -31,10 +31,10 @@ import com.cloudbees.syslog.SyslogMessage;
 import com.cloudbees.syslog.sender.SyslogMessageSender;
 import com.cloudbees.syslog.sender.TcpSyslogMessageSender;
 import com.cloudbees.syslog.sender.UdpSyslogMessageSender;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import se.swedenconnect.ca.service.base.configuration.properties.SyslogConfigProperties;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Extended Syslog Message sender.
@@ -48,7 +48,7 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
   private static final Logger log = LoggerFactory.getLogger(SyslogConfig.class);
   private static final int DEFAULT_SEVERITY = 5;
   private static final String HOSTNAME_ENV_LABEL = "HOSTNAME";
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
   private final SyslogConfigProperties.SyslogConfigData syslogConfigData;
   private final SyslogMessageSender messageSender;
   private String clientHostName;
@@ -62,7 +62,7 @@ public class ExtSyslogMessageSender implements SyslogMessageSender {
    */
   public ExtSyslogMessageSender(final SyslogConfigProperties.SyslogConfigData syslogConfigData) {
     this.syslogConfigData = syslogConfigData;
-    objectMapper.registerModule(new JavaTimeModule());
+    this.objectMapper = JsonMapper.builder().build();
 
     this.clientHostName = System.getenv(HOSTNAME_ENV_LABEL);
     if (StringUtils.hasText(syslogConfigData.getClienthostname())) {
