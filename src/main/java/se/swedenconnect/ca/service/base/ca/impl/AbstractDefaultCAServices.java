@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +79,7 @@ import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.configuration.properties.EntityNameProperties;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
-import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.container.ManagedPkiCredential;
 
 /**
  * This implementation of CA Services assumes a set file structure within an instances folder Where each instance has
@@ -172,7 +171,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
       final File repositoryDir = this.createOrLoadDir(instanceDir, "repository");
 
       log.debug("Creating the local key store for the CA of instance {}", instance);
-      final PkiCredential caKeySource = this.getKeySource(caKeyConf, keyDir, "ca",
+      final ManagedPkiCredential caKeySource = this.getKeySource(caKeyConf, keyDir, "ca",
           keyDir, certsDir, repositoryDir);
       assert caKeySource != null;
 
@@ -253,7 +252,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
         // Set initial values for the OCSP certificate chain and algorithm
         List<X509CertificateHolder> ocspServiceChain = new ArrayList<>(caChain);
         String ocspAlgorithm = caConfig.getAlgorithm();
-        PkiCredential ocspKeySource = this.getKeySource(ocspKeyConf, keyDir, "ocsp");
+        ManagedPkiCredential ocspKeySource = this.getKeySource(ocspKeyConf, keyDir, "ocsp");
         // Determine if the OCSP responder is a separate entity based on whether we found a separate OCSP responder key
         final boolean separateOcspEntity = ocspKeySource != null;
 
@@ -372,7 +371,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @return {@link OCSPResponder}
    * @throws NoSuchAlgorithmException the specified algorithm is not supported
    */
-  protected OCSPResponder createOcspResponder(final PkiCredential ocspKeySource, final OCSPModel ocspModel,
+  protected OCSPResponder createOcspResponder(final ManagedPkiCredential ocspKeySource, final OCSPModel ocspModel,
       final CARepository caRepository)
       throws NoSuchAlgorithmException {
     return new RepositoryBasedOCSPResponder(ocspKeySource, ocspModel, caRepository);
@@ -393,7 +392,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws IOException input output data error
    * @throws CertificateEncodingException error encoding certificates
    */
-  protected abstract AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
+  protected abstract AbstractBasicCA getBasicCaService(String instance, String type, ManagedPkiCredential issuerCredential,
       CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel,
       List<String> crlDistributionPoints)
       throws NoSuchAlgorithmException, IOException, CertificateEncodingException;
@@ -428,7 +427,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws NoSuchAlgorithmException algorithm is not supported
    * @throws IOException error processing data
    */
-  protected X509CertificateHolder generateOcspCertificate(final PkiCredential caKeySource,
+  protected X509CertificateHolder generateOcspCertificate(final ManagedPkiCredential caKeySource,
       final X509CertificateHolder issuerCert,
       final PublicKey ocspPublicKey, final CAConfigData caConfigData, final String instance)
       throws NoSuchAlgorithmException, IOException {
@@ -486,7 +485,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    * @throws CertificateIssuanceException error issuing certificate
    */
-  protected abstract X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource,
+  protected abstract X509CertificateHolder generateSelfIssuedCaCert(ManagedPkiCredential caKeySource,
       CAConfigData caConfigData, String instance,
       String baseUrl)
       throws NoSuchAlgorithmException, CertificateIssuanceException;
@@ -501,7 +500,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @throws NoSuchAlgorithmException if the algorithm is not supported
    * @throws CertificateIssuanceException error issuing certificate
    */
-  protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(final PkiCredential caKeySource,
+  protected X509CertificateHolder defaultGenerateSelfIssuedCaCert(final ManagedPkiCredential caKeySource,
       final CAConfigData caConfigData)
       throws NoSuchAlgorithmException, CertificateIssuanceException {
     final CAConfigData.CaConfig caConfig = caConfigData.getCa();
@@ -534,7 +533,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    * @param certificate certificate for the public key of the key source
    * @throws IOException on error in the input data
    */
-  private void validateCertAndKey(final PkiCredential keySource, final X509CertificateHolder certificate)
+  private void validateCertAndKey(final ManagedPkiCredential keySource, final X509CertificateHolder certificate)
       throws IOException {
     assert keySource != null;
     final boolean caCertKeyMatch = Arrays.equals(
@@ -561,7 +560,7 @@ public abstract class AbstractDefaultCAServices extends AbstractCAServices {
    *          delete history of any old key
    * @return key source
    */
-  private PkiCredential getKeySource(final CAConfigData.KeySourceData keyConf, final File keyDir,
+  private ManagedPkiCredential getKeySource(final CAConfigData.KeySourceData keyConf, final File keyDir,
       final String entityIdentifier,
       final File... cleanDirs)
       throws Exception {

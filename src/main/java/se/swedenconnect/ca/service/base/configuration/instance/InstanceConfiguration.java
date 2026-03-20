@@ -17,6 +17,7 @@ package se.swedenconnect.ca.service.base.configuration.instance;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -98,6 +99,7 @@ public class InstanceConfiguration {
         (String) this.getValue(prop.getCustomCertStorageLocation(), defaultVal.getCustomCertStorageLocation()));
     caConfig.setName(this.getName(prop.getName()));
     caConfig.setCrlMaxDurationBeforeUpgrade((Duration) this.getValue(prop.getCrlMaxDurationBeforeUpgrade(), defaultVal.getCrlMaxDurationBeforeUpgrade()));
+    caConfig.setCertReqPolicies(getListValue(prop.getCertReqPolicies(), defaultVal.getCertReqPolicies()));
     return caConfig;
   }
 
@@ -136,6 +138,13 @@ public class InstanceConfiguration {
     keySourceData.setAlias((String) this.getValue(prop.getAlias(), defaultValue.getAlias()));
     keySourceData.setPass((String) this.getValue(prop.getPass(), defaultValue.getPass()));
     return keySourceData;
+  }
+
+  private static List getListValue(final List<?> value, final List<?> defaultValue) {
+    if (value == null || value.isEmpty()) {
+      return defaultValue;
+    }
+    return value;
   }
 
   private Object getValue(final Object confValue, final Object defaultValue) {

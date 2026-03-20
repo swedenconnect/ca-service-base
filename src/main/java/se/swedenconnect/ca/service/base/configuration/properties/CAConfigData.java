@@ -18,6 +18,7 @@ package se.swedenconnect.ca.service.base.configuration.properties;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
+import java.util.List;
 
 import org.springframework.boot.convert.DurationUnit;
 
@@ -87,6 +88,9 @@ public class CAConfigData {
     /** Max duration after issuance when issuance of a new CRL will be enforced */
     @DurationUnit(ChronoUnit.SECONDS)
     private Duration crlMaxDurationBeforeUpgrade;
+
+    private List<String> certReqPolicies;
+
   }
 
   /**

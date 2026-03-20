@@ -19,9 +19,9 @@ import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.ErrorPage;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.error.ErrorPage;
+import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -79,14 +79,14 @@ public class TomcatSettings {
         connector.setSecure(true);
         protocol.setSecret(this.ajpSecret);
       }
-      webServerFactory.addAdditionalTomcatConnectors(connector);
+      webServerFactory.addAdditionalConnectors(connector);
     }
 
     if (this.serverControlPort > -1) {
       final Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
       connector.setScheme("http");
       connector.setPort(this.serverControlPort);
-      webServerFactory.addAdditionalTomcatConnectors(connector);
+      webServerFactory.addAdditionalConnectors(connector);
     }
     webServerFactory.addErrorPages(
         new ErrorPage(HttpStatus.NOT_FOUND, "/404-redirect"),
