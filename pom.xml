@@ -6,13 +6,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.3</version>
+    <version>4.1.0</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>ca-service-base</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
   <packaging>jar</packaging>
 
   <name>CA Service Base</name>
@@ -22,10 +22,10 @@
   <properties>
     <java.version>21</java.version>
 
-    <ca.engine.version>2.2.0</ca.engine.version>
-    <credential.support.version>2.2.0</credential.support.version>
-    <ca.cmc.version>2.0.0</ca.cmc.version>
-    <bouncycastle.version>1.83</bouncycastle.version>
+    <ca.engine.version>2.2.1</ca.engine.version>
+    <credential.support.version>2.2.1</credential.support.version>
+    <ca.cmc.version>2.0.1</ca.cmc.version>
+    <bouncycastle.version>1.84</bouncycastle.version>
   </properties>
 
   <licenses>
@@ -107,17 +107,17 @@
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
       </dependency>
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.21</version>
+        <version>2.22</version>
       </dependency>
 
     </dependencies>
