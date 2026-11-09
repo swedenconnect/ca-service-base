@@ -12,7 +12,7 @@
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>ca-service-base</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>CA Service Base</name>
@@ -69,6 +69,21 @@
       <name>Maven Central</name>
       <url>https://repo1.maven.org/maven2/</url>
     </repository>
+
+    <!--
+      The GitHub Packages Maven registry of the Sweden Connect organization. Later releases of the Sweden Connect
+      CA libraries are published there only. Downloading needs a server with the id github in settings.xml, see
+      docs/github-packages.md. Maven Central is listed first, so it is asked first for everything else.
+      -->
+    <repository>
+      <id>github</id>
+      <name>Sweden Connect on GitHub Packages</name>
+      <url>https://maven.pkg.github.com/swedenconnect/*</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
   </repositories>
 
   <dependencyManagement>
@@ -249,27 +264,24 @@
 
   <profiles>
 
+    <!--
+      Builds the source and javadoc files, signs everything with GPG, and deploys with the Maven deploy plugin to the
+      GitHub Packages Maven registry of this repository. The credentials are those of a server with the id github in
+      settings.xml. No snapshot repository is given, since snapshots are not published.
+      -->
     <profile>
       <id>release</id>
 
-      <!-- See http://central.sonatype.org/pages/apache-maven.html for setup -->
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/swedenconnect/ca-service-base</url>
+        </repository>
+      </distributionManagement>
 
       <build>
         <plugins>
-
-          <!--
-            See https://central.sonatype.org/publish/publish-portal-maven/
-          -->
-          <plugin>
-            <groupId>org.sonatype.central</groupId>
-            <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.9.0</version>
-            <extensions>true</extensions>
-            <configuration>
-              <publishingServerId>central</publishingServerId>
-              <autoPublish>true</autoPublish>
-            </configuration>
-          </plugin>
 
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -317,6 +329,33 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+
+        </plugins>
+      </build>
+
+    </profile>
+
+    <!--
+      Kept in case publishing to Maven Central is needed again. Selected together with the release profile, as in
+      -Prelease,maven-central-release, it replaces the deploy to GitHub Packages with an upload to Maven Central
+      through the Sonatype Central publishing plugin, as the server with the id central in settings.xml.
+      -->
+    <profile>
+      <id>maven-central-release</id>
+
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.9.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+            </configuration>
           </plugin>
 
         </plugins>
